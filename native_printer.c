@@ -20,7 +20,6 @@
 #include <gutenprint/gutenprint-module.h>
 #include <pappl/pappl.h>
 
-
 // extern const char *ppdext;
 // extern const char *cups_modeldir;
 // extern const char *gpext;
@@ -30,8 +29,6 @@
 // #define VERSION "5.3.4-2023-12-06T01-00-2ef8ba24"
 /* config.h.  Generated from config.h.in by configure.  */
 /* config.h.in.  Generated from configure.ac by autoheader.  */
-
-
 
 // Code for the header file definitions over here...
 /* config.h.  Generated from config.h.in by configure.  */
@@ -74,7 +71,7 @@
 /* #undef HAVE_CFPREFERENCESCOPYAPPVALUE */
 
 /* Define if the GNU dcgettext() function is already present or preinstalled.
-   */
+ */
 #define HAVE_DCGETTEXT 1
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
@@ -185,7 +182,7 @@
 #define LT_OBJDIR ".libs/"
 
 /* Printers to test in minimal run */
-#define MINIMAL_PRINTERS_TO_TEST escp2-r1800 escp2-3880 	pcl-g_4 pcl-g_5c pcl-500 	mitsubishi-p95d shinko-chcs2145 kodak-1400 canon-cp910 mitsubishi-9800d 	bjc-s200 bjc-PIXMA-Pro9000mk2 	datamax_oneil_I4212e 	lexmark-z43
+#define MINIMAL_PRINTERS_TO_TEST escp2 - r1800 escp2 - 3880 pcl - g_4 pcl - g_5c pcl - 500 mitsubishi - p95d shinko - chcs2145 kodak - 1400 canon - cp910 mitsubishi - 9800d bjc - s200 bjc - PIXMA - Pro9000mk2 datamax_oneil_I4212e lexmark - z43
 
 /* Build a modular libgutenprint */
 /* #undef MODULE */
@@ -268,34 +265,141 @@
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
 
-
 // pappl_pr_driver_t *guten_print_drivers;
 // static funct()
 // {
 
 // }
 
-
-
-
-int main(int argc, char * argv[])
+int main(int argc, char *argv[])
 {
-    stp_init();
-    // stp_printer_t * printer;
+   stp_init();
+   // stp_printer_t * printer;
 
-     const char		*scheme;	/* URI scheme */
-  int			i;		/* Looping var */
-  const stp_printer_t	*p;	/* Pointer to printer driver */
+   const char *scheme;     /* URI scheme */
+   int i;                  /* Looping var */
+   const stp_printer_t *p; /* Pointer to printer driver */
+
+   // below is the logic to print the models ...
+
+   int verbose = 0;
+
+   int count_of_printer = 0;
+   count_of_printer = stp_printer_model_count();
+
+   // pappl_pr_driver_t guten_print_drivers[count_of_printer];
+   pappl_pr_driver_t *guten_print_drivers = (pappl_pr_driver_t *)malloc(count_of_printer * sizeof(pappl_pr_driver_t));
+   int null_count = 0;
+   for (i = 0; i < stp_printer_model_count(); i++)
+   {
+      p = stp_get_printer_by_index(i);
+      if (p)
+      {
+         guten_print_drivers[i].name = stp_printer_get_driver(p);
+         guten_print_drivers[i].description = stp_printer_get_long_name(p);
+         guten_print_drivers[i].device_id = NULL;
+         guten_print_drivers[i].extension = NULL;
+      }
+   }
+
+   // driver call back khudse likhde...
+   // so from the make and model we have created the driver object...
+   // map the same in the
+
+   char *model = "bjc-PIXUS-iP3100";
+
+   const stp_printer_t *printer = stp_get_printer_by_driver(model);
+   stp_vars_t *v;
+   const stp_vars_t *printvars;
+   printvars = stp_printer_get_defaults(printer);
+   v = stp_vars_create_copy(printvars);
+
+   stp_parameter_list_t paramlist;
+   paramlist = stp_get_parameter_list(v);
+   size_t param_count = stp_parameter_list_count(paramlist);
+
+   // below code is for standard common options...
+
+   stp_parameter_t desc;
+   int num_opts = 0;
+   const stp_param_string_t *opt;
+   // stp_describe_parameter(v, "MediaType", &desc);
+   // if (desc.p_type == STP_PARAMETER_TYPE_STRING_LIST && desc.is_active &&
+   //     stp_string_list_count(desc.bounds.str) > 0)
+   // {
+   //    num_opts = stp_string_list_count(desc.bounds.str);
+   //    // gpprintf(fp, "*%s.Translation MediaType/%s: \"\"\n", lang, _("Media Type"));
+
+   //    for (i = 0; i < num_opts; i++)
+   //    {
+   //       opt = stp_string_list_param(desc.bounds.str, i);
+   //       printf("Values Supported ---> %s\n", opt->name);
+   //       //  gpprintf(fp, "*%s.MediaType %s/%s: \"\"\n", lang, opt->name, stp_i18n_lookup(po, opt->text));
+   //    }
+   // }
+
+   // printf("the default vavlue --> %s\n", desc.deflt.str);
+   // stp_parameter_description_destroy(&desc);
+
+   // seeing all the options and  values in the current printer models..
+   int l;
+   for (l = 0; l < param_count; l++)
+   {
+      const stp_parameter_t *lparam =
+          stp_parameter_list_param(paramlist, l);
+      printf("the parameter name is ----> %s\n", lparam->name);
+      stp_describe_parameter(v, lparam->name, &desc);
+
+      if (desc.p_type == STP_PARAMETER_TYPE_STRING_LIST && desc.is_active &&
+          stp_string_list_count(desc.bounds.str) > 0)
+      {
+
+               printf("the default value --> %s\n", desc.deflt.str);
+         num_opts = stp_string_list_count(desc.bounds.str);
 
 
-    // below is the logic to print the models ...
+         for (i = 0; i < num_opts; i++)
+         {
+            opt = stp_string_list_param(desc.bounds.str, i);
+            printf("Values Supported ---> %s\n", opt->name);
+         }
+      }
+      else{
+         printf("it's something different \n");
+      }
+      printf("%s\n", " ");
+      stp_parameter_description_destroy(&desc);
+   }
+   
+   //  papplMainloop(argc, argv, VERSION, "Copyright &copy Ankit Pal Singh",
+   //      count_of_printer,
+   //      guten_print_drivers, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+}
 
-    int verbose = 0;
+// creating the driver callback over here..
 
-    int count_of_printer = 0;
-    count_of_printer = stp_printer_model_count();
-    
-    
+static bool
+driver_cb(
+   pappl_system_t *sytem,
+   const char *driver_name,
+   const char *device_uri,
+   const char *device_id,
+   pappl_pr_driver_data_t * data,
+   ipp_t  ** attrs,
+   void   *cbdata
+)
+{
+
+   bool ret = false;
+   int i;
+
+   // iterate over all the supported models and create the driver data structure...
+   // system will automaticallly poll the options from there...
+
+   int count_of_printer = 0;
+   count_of_printer = stp_printer_model_count();
+   stp_printer_t *p;
+
    // pappl_pr_driver_t guten_print_drivers[count_of_printer];
    pappl_pr_driver_t *guten_print_drivers = (pappl_pr_driver_t *)malloc(count_of_printer * sizeof(pappl_pr_driver_t));
    int null_count = 0;
@@ -311,74 +415,77 @@ int main(int argc, char * argv[])
         }
     }
 
-    // driver call back khudse likhde...
+   for(i=0;i < (int) (sizeof(guten_print_drivers)/ sizeof(guten_print_drivers[0])) ; i++)
+   {
+      if(!strcmp(driver_name, guten_print_drivers[i].name))
+      {
+         papplCopyString(data->make_and_model, guten_print_drivers[i].description, sizeof(data->make_and_model));
+         break;
+      }
+   }
 
-    papplMainloop(argc, argv, VERSION, "Copyright &copy Ankit Pal Singh",
-        count_of_printer,
-        guten_print_drivers, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+   // so from the make and model we have created the driver object...
+   // map the same in the
 
+   //   char *model = "bjc-PIXUS-iP3100/";
+   //    const char * prefix = CUPS_MODELDIR;
+   //    const char * language = NULL;
+   //    int which_ppds = 2;
+   //    int use_compression = 0;
+
+      p = stp_get_printer_by_driver(driver_name);
+
+      stp_vars_t * v;
+      const stp_vars_t * printvars;
+      printvars = stp_printer_get_defaults(p);
+      v = stp_vars_create_copy(printvars);
+
+               stp_parameter_list_t paramlist;
+               paramlist = stp_get_parameter_list(v);
+               size_t param_count = stp_parameter_list_count(paramlist);
+
+      printf("the count of hte parameter list --> %ld\n" , param_count);
+
+      for(int l = 0; l < param_count; l++)
+{
+   const stp_parameter_t *lparam = stp_parameter_list_param(paramlist, l);
+
+   printf("the name of the option that i have is --> %s\n", lparam->name);
+}
 
 }
 
+// // //$ gcc -c stpimage.c
+// // //$ gcc -o stpimage -lgutenprint stpimage.o
 
-// creating the driver callback over here..
+// // // for compiling the binary file created ...
 
-// static bool 
-// driver_cb(
-//    pappl_system_t *sytem, 
-//    const char *driver_name, 
-//    const char *device_uri,
-//    const char *device_id,
-//    pappl_pr_driver_data_t * data,
-//    ipp_t  ** attrs,
-//    void   *cbdata
-// )
-// {
+// // // gcc -o native_printer native_printer.o -lgutenprint -lcups -lz -lm -lgssapi_krb5 -lavahi-common -lavahi-client -lgnutls -lkrb5 -lk5crypto -lcom_err -lkrb5support -ldbus-1 -lp11-kit -lidn2  -ltasn1 -lnettle -lhogweed -lgmp  -lresolv -lsystemd -lffi   -llzma -lzstd
+// // // gcc -c native_printer.c -o native_printer.o
+// // // gcc -o native_printer native_printer.o -lgutenprint
 
-//    bool ret = false;
-//    int i;
+// // //-lcups -lz -lm -lgssapi_krb5 -lavahi-common -lavahi-client -lgnutls -lkrb5 -lk5crypto -lcom_err -lkrb5support -ldbus-1 -lp11-kit -lidn2  -ltasn1 -lnettle -lhogweed -lgmp  -lresolv -lsystemd -lffi   -llzma -lzstd
 
-//    for(i=0;i<(int ) sizeof())
+//     // below is the logic to print the ppd stuff ... like using list ..
 
+// //   printf("Ankti lenth --_> %d\n", stp_printer_model_count());
+// //   for (i = 0; i < stp_printer_model_count(); i++)
+// //     if ((printer = stp_get_printer_by_index(i)) != NULL)
+// //     {
+// //       const char *device_id;
+// //       if (!strcmp(stp_printer_get_family(printer), "ps") ||
+// // 	  !strcmp(stp_printer_get_family(printer), "raw"))
+// //         continue;
 
-// }
-
-// //$ gcc -c stpimage.c
-// //$ gcc -o stpimage -lgutenprint stpimage.o
-
-
-// // for compiling the binary file created ...
-
-// // gcc -o native_printer native_printer.o -lgutenprint -lcups -lz -lm -lgssapi_krb5 -lavahi-common -lavahi-client -lgnutls -lkrb5 -lk5crypto -lcom_err -lkrb5support -ldbus-1 -lp11-kit -lidn2  -ltasn1 -lnettle -lhogweed -lgmp  -lresolv -lsystemd -lffi   -llzma -lzstd 
-// // gcc -c native_printer.c -o native_printer.o
-// // gcc -o native_printer native_printer.o -lgutenprint
-
-
-// //-lcups -lz -lm -lgssapi_krb5 -lavahi-common -lavahi-client -lgnutls -lkrb5 -lk5crypto -lcom_err -lkrb5support -ldbus-1 -lp11-kit -lidn2  -ltasn1 -lnettle -lhogweed -lgmp  -lresolv -lsystemd -lffi   -llzma -lzstd 
-
-
-
-
-    // below is the logic to print the ppd stuff ... like using list ..
-
-//   printf("Ankti lenth --_> %d\n", stp_printer_model_count());
-//   for (i = 0; i < stp_printer_model_count(); i++)
-//     if ((printer = stp_get_printer_by_index(i)) != NULL)
-//     {
-//       const char *device_id;
-//       if (!strcmp(stp_printer_get_family(printer), "ps") ||
-// 	  !strcmp(stp_printer_get_family(printer), "raw"))
-//         continue;
-
-//       device_id = stp_printer_get_device_id(printer);
-//       printf("\"%s://%s/expert\" "
-//              "%s "
-// 	     "\"%s\" "
-//              "\"%s" CUPS_PPD_NICKNAME_STRING VERSION "\" "
-// 	     "\"%s\"\n",
-//              scheme, stp_printer_get_driver(printer),
-// 	     "en",
-// 	     stp_printer_get_manufacturer(printer),
-// 	     stp_printer_get_long_name(printer),
-// 	     device_id ? device_id : "");
-//     }
+// //       device_id = stp_printer_get_device_id(printer);
+// //       printf("\"%s://%s/expert\" "
+// //              "%s "
+// // 	     "\"%s\" "
+// //              "\"%s" CUPS_PPD_NICKNAME_STRING VERSION "\" "
+// // 	     "\"%s\"\n",
+// //              scheme, stp_printer_get_driver(printer),
+// // 	     "en",
+// // 	     stp_printer_get_manufacturer(printer),
+// // 	     stp_printer_get_long_name(printer),
+// // 	     device_id ? device_id : "");
+// //     }
