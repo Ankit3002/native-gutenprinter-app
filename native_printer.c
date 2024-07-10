@@ -1,6 +1,9 @@
 // #include <gutenprint/gutenprint.h>
 // #include <gutenprint/util.h>
 #include <cups/raster.h>
+#include <cups/ipp.h>
+#include <cups/http.h>
+#include <cups/array.h>
 #include <gutenprint/string-list.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -271,6 +274,13 @@
 
 // }
 
+static bool driver_cb(pappl_system_t *sytem, const char *driver_name,
+                      const char *device_uri, const char *device_id,
+                      pappl_pr_driver_data_t *data, ipp_t **attrs, void *cbdata);
+
+
+
+
 int main(int argc, char *argv[])
 {
    stp_init();
@@ -308,21 +318,21 @@ int main(int argc, char *argv[])
 
    char *model = "bjc-PIXUS-iP3100";
 
-   const stp_printer_t *printer = stp_get_printer_by_driver(model);
-   stp_vars_t *v;
-   const stp_vars_t *printvars;
-   printvars = stp_printer_get_defaults(printer);
-   v = stp_vars_create_copy(printvars);
+   // const stp_printer_t *printer = stp_get_printer_by_driver(model);
+   // stp_vars_t *v;
+   // const stp_vars_t *printvars;
+   // printvars = stp_printer_get_defaults(printer);
+   // v = stp_vars_create_copy(printvars);
 
-   stp_parameter_list_t paramlist;
-   paramlist = stp_get_parameter_list(v);
-   size_t param_count = stp_parameter_list_count(paramlist);
+   // stp_parameter_list_t paramlist;
+   // paramlist = stp_get_parameter_list(v);
+   // size_t param_count = stp_parameter_list_count(paramlist);
 
-   // below code is for standard common options...
+   // // below code is for standard common options...
 
-   stp_parameter_t desc;
-   int num_opts = 0;
-   const stp_param_string_t *opt;
+   // stp_parameter_t desc;
+   // int num_opts = 0;
+   // const stp_param_string_t *opt;
    // stp_describe_parameter(v, "MediaType", &desc);
    // if (desc.p_type == STP_PARAMETER_TYPE_STRING_LIST && desc.is_active &&
    //     stp_string_list_count(desc.bounds.str) > 0)
@@ -341,42 +351,73 @@ int main(int argc, char *argv[])
    // printf("the default vavlue --> %s\n", desc.deflt.str);
    // stp_parameter_description_destroy(&desc);
 
-   // seeing all the options and  values in the current printer models..
-   int l;
-   for (l = 0; l < param_count; l++)
-   {
-      const stp_parameter_t *lparam =
-          stp_parameter_list_param(paramlist, l);
-      printf("the parameter name is ----> %s\n", lparam->name);
-      stp_describe_parameter(v, lparam->name, &desc);
+   // // seeing all the options and  values in the current printer models..
+   // int l;
+   // for (l = 0; l < param_count; l++)
+   // {
+   //    const stp_parameter_t *lparam =
+   //        stp_parameter_list_param(paramlist, l);
+   //    printf("the parameter name is ----> %s\n", lparam->name);
+   //    stp_describe_parameter(v, lparam->name, &desc);
 
-      if (desc.p_type == STP_PARAMETER_TYPE_STRING_LIST && desc.is_active &&
-          stp_string_list_count(desc.bounds.str) > 0)
-      {
+   //    if (desc.p_type == STP_PARAMETER_TYPE_STRING_LIST && desc.is_active &&
+   //        stp_string_list_count(desc.bounds.str) > 0)
+   //    {
 
-               printf("the default value --> %s\n", desc.deflt.str);
-         num_opts = stp_string_list_count(desc.bounds.str);
+   //             printf("the default value --> %s\n", desc.deflt.str);
+   //       num_opts = stp_string_list_count(desc.bounds.str);
 
 
-         for (i = 0; i < num_opts; i++)
-         {
-            opt = stp_string_list_param(desc.bounds.str, i);
-            printf("Values Supported ---> %s\n", opt->name);
-         }
-      }
-      else{
-         printf("it's something different \n");
-      }
-      printf("%s\n", " ");
-      stp_parameter_description_destroy(&desc);
-   }
-   
-   //  papplMainloop(argc, argv, VERSION, "Copyright &copy Ankit Pal Singh",
-   //      count_of_printer,
-   //      guten_print_drivers, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+   //       for (i = 0; i < num_opts; i++)
+   //       {
+   //          opt = stp_string_list_param(desc.bounds.str, i);
+   //          printf("Values Supported ---> %s\n", opt->name);
+   //       }
+   //    }
+   //    else{
+   //       printf("it's something different \n");
+   //    }
+   //    printf("%s\n", " ");
+   //    stp_parameter_description_destroy(&desc);
+   // }
+
+   // pappl_system_t * system;
+   ipp_t *driver_attrs;
+   pappl_pr_driver_data_t driver_data;
+   // driver_cb(NULL, model, NULL, NULL, &driver_data, &driver_attrs, NULL );
+
+    papplMainloop(argc, argv, VERSION, "Copyright &copy Ankit Pal Singh",
+        count_of_printer,
+        guten_print_drivers, NULL, driver_cb, NULL, NULL, NULL, NULL, NULL);
 }
 
 // creating the driver callback over here..
+
+const char *special_options[] =
+{
+  "PageSize",
+  "MediaType",
+  "InputSlot",
+  "Resolution",
+  "OutputOrder",
+  "Quality",
+  "Duplex",
+  NULL
+};
+
+
+static int				/* O - 1 if non-grouped, 0 otherwise */
+is_special_option(const char *name)	/* I - Option name */
+{
+  int i = 0;
+  while (special_options[i])
+    {
+      if (strcmp(name, special_options[i]) == 0)
+	return 1;
+      i++;
+    }
+  return 0;
+}
 
 static bool
 driver_cb(
@@ -384,74 +425,192 @@ driver_cb(
    const char *driver_name,
    const char *device_uri,
    const char *device_id,
-   pappl_pr_driver_data_t * data,
-   ipp_t  ** attrs,
+   pappl_pr_driver_data_t * driver_data,
+   ipp_t  ** driver_attrs,
    void   *cbdata
 )
 {
 
-   bool ret = false;
+   // driver name is passed in the function ...
+   // for the specific printer 
+
+
+   stp_init();
+      // char *model = "bjc-PIXUS-iP3100";
    int i;
+   const stp_printer_t *printer = stp_get_printer_by_driver(driver_name);
+   stp_vars_t *v;
+   const stp_vars_t *printvars;
+   printvars = stp_printer_get_defaults(printer);
 
-   // iterate over all the supported models and create the driver data structure...
-   // system will automaticallly poll the options from there...
+   // if(printer != NULL)
+   // {
+   //    if(*driver_attrs == NULL)
+   //    {
+   //       *driver_attrs = ippNew();
+   //    }
+   // }
+   *driver_attrs = ippNew();
 
-   int count_of_printer = 0;
-   count_of_printer = stp_printer_model_count();
-   stp_printer_t *p;
+   // char ** string_list = calloc(3, sizeof(char*));
 
-   // pappl_pr_driver_t guten_print_drivers[count_of_printer];
-   pappl_pr_driver_t *guten_print_drivers = (pappl_pr_driver_t *)malloc(count_of_printer * sizeof(pappl_pr_driver_t));
-   int null_count = 0;
-    for (i = 0; i < stp_printer_model_count(); i++)
-    {
-        p = stp_get_printer_by_index(i);
-        if (p)
-        {
-         guten_print_drivers[i].name = stp_printer_get_driver(p);
-         guten_print_drivers[i].description = stp_printer_get_long_name(p);
-         guten_print_drivers[i].device_id = NULL;
-         guten_print_drivers[i].extension = NULL;
-        }
-    }
+   // string_list[0]= "brock";
+   // string_list[1] = "lesnar";
+   // string_list[2] = "lesdnar";
 
-   for(i=0;i < (int) (sizeof(guten_print_drivers)/ sizeof(guten_print_drivers[0])) ; i++)
+   // ippAddStrings(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_KEYWORD, "Ankit", 3, NULL, (const char *const *)string_list);
+   driver_data->num_vendor = 0;
+   v = stp_vars_create_copy(printvars);
+   
+   stp_parameter_list_t paramlist;
+   paramlist = stp_get_parameter_list(v);
+   size_t param_count = stp_parameter_list_count(paramlist);
+
+   // below code is for standard common options...
+
+   stp_parameter_t desc;
+   int num_opts = 0;
+   const stp_param_string_t *opt;
+
+   // seeing all the options and  values in the current printer models..
+   for (int l = 0; l < param_count; l++)
    {
-      if(!strcmp(driver_name, guten_print_drivers[i].name))
+      const stp_parameter_t *lparam = stp_parameter_list_param(paramlist, l);
+
+
+      // Checking for String list...
+      if (is_special_option(lparam->name) || lparam->read_only ||  (lparam->p_type != STP_PARAMETER_TYPE_STRING_LIST &&
+              lparam->p_type != STP_PARAMETER_TYPE_RAW &&
+              lparam->p_type != STP_PARAMETER_TYPE_BOOLEAN &&
+              lparam->p_type != STP_PARAMETER_TYPE_DIMENSION &&
+              lparam->p_type != STP_PARAMETER_TYPE_INT &&
+              lparam->p_type != STP_PARAMETER_TYPE_DOUBLE))
+              continue;
+
+      // list for storing all the parameters...
+      char ipp_supported[256];
+      char ipp_default[256];
+      char ** option_list;
+      stp_describe_parameter(v, lparam->name, &desc);
+      if(desc.is_active)
       {
-         papplCopyString(data->make_and_model, guten_print_drivers[i].description, sizeof(data->make_and_model));
-         break;
+         // now over here...
+         snprintf(ipp_supported, sizeof(ipp_supported), "%s-supported", desc.name);
+         snprintf(ipp_default, sizeof(ipp_default), "%s-default", desc.name);
+         driver_data->vendor[driver_data->num_vendor] = strdup(desc.name);
+         driver_data->num_vendor++;
+         switch(desc.p_type)
+         {
+            case STP_PARAMETER_TYPE_STRING_LIST:
+            if(desc.bounds.str == NULL) continue;
+            num_opts = stp_string_list_count(desc.bounds.str);
+            option_list = calloc(num_opts , sizeof(char *));
+            char * default_value = strdup(desc.deflt.str);
+            for(i=0;i < num_opts; i++)
+            {
+               opt = stp_string_list_param(desc.bounds.str, i);
+               option_list[i] = stp_strdup(opt->name);
+               // printf("the value ----- over ---> %s\n", option_list[i]);
+               // now opt->name is the value of the
+            }
+            // add in the ipp object over here...
+            ippAddStrings(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_KEYWORD, ipp_supported,num_opts, NULL, (const char *const *)option_list);
+            ippAddString(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_KEYWORD, ipp_default, NULL, default_value);
+            break;
+
+            case STP_PARAMETER_TYPE_RAW:
+               ippAddString(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_KEYWORD, ipp_supported, NULL, desc.name);
+               ippAddString(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_KEYWORD, ipp_default, NULL, desc.name);
+               break;
+            case STP_PARAMETER_TYPE_BOOLEAN:
+               num_opts = 2;
+               option_list = calloc(num_opts, sizeof(char *));
+               option_list[0] = "1";
+               option_list[1] = "0";
+               ippAddBooleans(*driver_attrs, IPP_TAG_PRINTER, ipp_supported, 2, (const char * const *)option_list);
+               ippAddBoolean(*driver_attrs, IPP_TAG_PRINTER, ipp_default, desc.deflt.boolean);
+               break;
+
+            case STP_PARAMETER_TYPE_DOUBLE:
+               // printf("the value of the lower bound --> %f\n", desc.bounds.dbl.lower);
+               // printf("the value of the upperboudn --> %f\n", desc.bounds.dbl.upper);
+               // printf("print --> value --> %s\n", desc.name);
+               // printf("the default  value --> %f\n", desc.deflt.dbl);
+               // printf("%s\n", " ");
+               ippAddRange(*driver_attrs, IPP_TAG_PRINTER, ipp_supported, desc.bounds.dbl.lower, desc.bounds.dbl.upper);
+               ippAddInteger(*driver_attrs ,IPP_TAG_PRINTER, IPP_TAG_INTEGER, ipp_default, desc.deflt.dbl);
+               break;
+            
+            case STP_PARAMETER_TYPE_DIMENSION:
+               // printf("print --> value --> %s\n", desc.name);
+               // for(int x = (int) desc.bounds.dimension.lower; x <= (int) desc.bounds.dimension.upper; x++)
+               // {
+               //    printf("The value  with dimension associated is --> %f\n", (double) x * 25.4 / 72.0);
+               // }
+               // printf("%s\n" , " ");
+               // printf("the default ---value =-> %f\n", desc.deflt.dimension);
+               ippAddRange(*driver_attrs, IPP_TAG_PRINTER, ipp_supported, (int)desc.bounds.dimension.lower, (int)desc.bounds.dimension.upper);
+               ippAddInteger(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_INTEGER, ipp_default, (int)desc.deflt.dimension);
+               break;
+            
+            case STP_PARAMETER_TYPE_INT:
+
+               // for(int x = desc.bounds.integer.lower; x <= (int) desc.bounds.integer.upper ;x++)
+               // {
+               //    printf("The value  with dimension associated is --> %d\n", x);
+               // }
+
+               //  printf("the default  value we have is --> %d\n", desc.deflt.integer);
+               ippAddRange(*driver_attrs, IPP_TAG_PRINTER, ipp_supported, desc.bounds.integer.lower, desc.bounds.integer.upper);
+               ippAddInteger(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_INTEGER, ipp_default, desc.deflt.integer);
+               break;
+            default:
+            break;
+
+         }
+               
+
       }
+      stp_parameter_description_destroy(&desc);
+
    }
 
-   // so from the make and model we have created the driver object...
-   // map the same in the
 
-   //   char *model = "bjc-PIXUS-iP3100/";
-   //    const char * prefix = CUPS_MODELDIR;
-   //    const char * language = NULL;
-   //    int which_ppds = 2;
-   //    int use_compression = 0;
 
-      p = stp_get_printer_by_driver(driver_name);
 
-      stp_vars_t * v;
-      const stp_vars_t * printvars;
-      printvars = stp_printer_get_defaults(p);
-      v = stp_vars_create_copy(printvars);
 
-               stp_parameter_list_t paramlist;
-               paramlist = stp_get_parameter_list(v);
-               size_t param_count = stp_parameter_list_count(paramlist);
+   // //    //  int ankit_len = driver_data.num_vendor;
+   //  ipp_attribute_t * ankit_preset;
+   //  int count = 0;
+   
+   // // iterate over driver data vendor options over here...
+   // for(int x = 0 ; x< driver_data->num_vendor; x++)
+   // {
+   //    printf("in the function --> %s\n", driver_data->vendor[x]);
+   // }
 
-      printf("the count of hte parameter list --> %ld\n" , param_count);
 
-      for(int l = 0; l < param_count; l++)
-{
-   const stp_parameter_t *lparam = stp_parameter_list_param(paramlist, l);
-
-   printf("the name of the option that i have is --> %s\n", lparam->name);
-}
+   //  for(ankit_preset = ippFirstAttribute(*driver_attrs); ankit_preset != NULL ; ankit_preset =  ippNextAttribute(*driver_attrs))
+   //  {
+   //    // here we are iterating on the ipp_t object...
+   //    int preset_len = ippGetCount(ankit_preset);
+   //    const char * okay_name = ippGetName(ankit_preset);
+   //    ipp_tag_t tag = ippGetValueTag(ankit_preset);
+   //    printf("the len of the values of the packet -_> %d\n", preset_len);
+   //    printf("This name of the option we have --> %s\n", okay_name);
+   //    for(int ix = 0; ix < preset_len; ix++)
+   //    {
+   //       switch(tag)
+   //       {
+   //          case IPP_TAG_KEYWORD:
+   //             const char * aorl = ippGetString(ankit_preset, ix, NULL);
+   //             printf("the value of the options i have  --> %s\n", aorl);
+   //             break;
+   //       }
+   //    }
+   //    printf(" %s\n", " ");
+   //  }
+   
 
 }
 
