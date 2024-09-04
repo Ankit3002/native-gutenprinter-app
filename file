@@ -1,0 +1,25 @@
+WITH ProductSelection AS (
+    SELECT
+        c.name AS customer_name,
+        c.budget,
+        p.item,
+        p.price,
+        SUM(p.price) OVER (PARTITION BY c.id ORDER BY p.price) AS running_total
+    FROM
+        CUSTOMERS c
+    CROSS JOIN
+        PRODUCTS p
+    ORDER BY
+        c.budget, p.price
+)
+SELECT
+    customer_name,
+    budget,
+    item,
+    price
+FROM
+    ProductSelection
+WHERE
+    running_total <= budget
+ORDER BY
+    budget, price;

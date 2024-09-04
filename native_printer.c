@@ -419,6 +419,38 @@ is_special_option(const char *name)	/* I - Option name */
   return 0;
 }
 
+
+static const char * const lprint_brother_ql_media[] =
+{					// Supported QL-* media sizes
+  "oe_dk1219-round_0.47x0.47in",
+  "oe_dk1204-multi-purpose_0.66x2.1in",
+  "oe_dk1203-file-folder_0.66x3.4in",
+  "oe_dk1209-small-address_1.1x2.4in",
+  "oe_dk1201-address_1.1x3.5in",
+  "oe_dk1208-large-address_1.4x3.5in",
+  "oe_dk1240-large-multi-purpose_1.9x4in",
+  "oe_dk1207-cd-dvd_2.2x2.2in",
+  "oe_dk1202-shipping_2.4x3.9in",
+
+  "na_index-4x6_4x6in",				// DK1241/1247
+
+  "roll_dk2113-continuous-film_2.4x600in",	// Black/Clear
+  "roll_dk2205-continuous_2.4x1200in",		// Black on White
+  "roll_dk2210-continuous_1.1x1200in",
+  "roll_dk2211-continuous-film_1.1x600in",
+  "roll_dk2212-continuous-film_2.4x600in",
+  "roll_dk2214-continuous_0.47x1200in",
+  "roll_dk2243-continuous_4x1200in",		// Black on White
+  "roll_dk2246-continuous_4.07x1200in",		// Black on White
+  "roll_dk2251-continuous_2.4x600in",		// Black/Red on White
+  "roll_dk2606-continuous-film_2.4x600in",	// Black/Yellow
+  "roll_dk4205-continuous-removable_2.4x1200in",// Black on White
+  "roll_dk4605-continuous-removable_2.4x1200in",// Black/Yellow on White
+
+  "roll_max_2.5x3600in",
+  "roll_min_0.25x1in"
+};
+
 static bool
 driver_cb(
    pappl_system_t *sytem,
@@ -432,7 +464,7 @@ driver_cb(
 {
 
    // driver name is passed in the function ...
-   // for the specific printer 
+   // for the specific printer
 
 
    stp_init();
@@ -461,7 +493,7 @@ driver_cb(
    // ippAddStrings(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_KEYWORD, "Ankit", 3, NULL, (const char *const *)string_list);
    driver_data->num_vendor = 0;
    v = stp_vars_create_copy(printvars);
-   
+
    stp_parameter_list_t paramlist;
    paramlist = stp_get_parameter_list(v);
    size_t param_count = stp_parameter_list_count(paramlist);
@@ -471,6 +503,7 @@ driver_cb(
    stp_parameter_t desc;
    int num_opts = 0;
    const stp_param_string_t *opt;
+
 
    // seeing all the options and  values in the current printer models..
    for (int l = 0; l < param_count; l++)
@@ -533,14 +566,14 @@ driver_cb(
 
             case STP_PARAMETER_TYPE_DOUBLE:
                // printf("the value of the lower bound --> %f\n", desc.bounds.dbl.lower);
-               // printf("the value of the upperboudn --> %f\n", desc.bounds.dbl.upper);
+               // printf("the value of the upperboudn --> %f\n", desc.bounds.dbl.upper );
                // printf("print --> value --> %s\n", desc.name);
                // printf("the default  value --> %f\n", desc.deflt.dbl);
                // printf("%s\n", " ");
-               ippAddRange(*driver_attrs, IPP_TAG_PRINTER, ipp_supported, desc.bounds.dbl.lower, desc.bounds.dbl.upper);
-               ippAddInteger(*driver_attrs ,IPP_TAG_PRINTER, IPP_TAG_INTEGER, ipp_default, desc.deflt.dbl);
+               ippAddRange(*driver_attrs, IPP_TAG_PRINTER, ipp_supported, desc.bounds.dbl.lower *100, desc.bounds.dbl.upper *100);
+               ippAddInteger(*driver_attrs ,IPP_TAG_PRINTER, IPP_TAG_INTEGER, ipp_default, desc.deflt.dbl*100);
                break;
-            
+
             case STP_PARAMETER_TYPE_DIMENSION:
                // printf("print --> value --> %s\n", desc.name);
                // for(int x = (int) desc.bounds.dimension.lower; x <= (int) desc.bounds.dimension.upper; x++)
@@ -552,7 +585,7 @@ driver_cb(
                ippAddRange(*driver_attrs, IPP_TAG_PRINTER, ipp_supported, (int)desc.bounds.dimension.lower, (int)desc.bounds.dimension.upper);
                ippAddInteger(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_INTEGER, ipp_default, (int)desc.deflt.dimension);
                break;
-            
+
             case STP_PARAMETER_TYPE_INT:
 
                // for(int x = desc.bounds.integer.lower; x <= (int) desc.bounds.integer.upper ;x++)
@@ -568,7 +601,7 @@ driver_cb(
             break;
 
          }
-               
+
 
       }
       stp_parameter_description_destroy(&desc);
@@ -576,13 +609,76 @@ driver_cb(
    }
 
 
+   // store the static attributes over here ...
+   // driver_data->num_features = 1;
+//   driver_data->features[0]  = "airprint-2.1";
+
+  // Pages per minute (interpret as "labels per minute")
+  driver_data->ppm = 60;
+
+  // "printer-kind" values...
+  driver_data->kind = PAPPL_KIND_LABEL;
+
+  // Color values...
+  driver_data->color_supported = PAPPL_COLOR_MODE_AUTO | PAPPL_COLOR_MODE_MONOCHROME | PAPPL_COLOR_MODE_BI_LEVEL;
+  driver_data->color_default   = PAPPL_COLOR_MODE_MONOCHROME;
+  driver_data->raster_types    = PAPPL_PWG_RASTER_TYPE_BLACK_1 | PAPPL_PWG_RASTER_TYPE_BLACK_8 | PAPPL_PWG_RASTER_TYPE_SGRAY_8;
+
+  // "print-quality-default" value...
+  driver_data->quality_default = IPP_QUALITY_NORMAL;
+
+  // "sides" values...
+  driver_data->sides_supported = PAPPL_SIDES_ONE_SIDED;
+  driver_data->sides_default   = PAPPL_SIDES_ONE_SIDED;
+
+  // "orientation-requested-default" value...
+  driver_data->orient_default = IPP_ORIENT_NONE;
+
+  // Media capabilities...
+  driver_data->input_face_up  = true;
+  driver_data->output_face_up = true;
+
+//   // Standard icons...
+//   driver_data->icons[0].driver_data    = lprint_small_png;
+//   driver_data->icons[0].driver_datalen = sizeof(lprint_small_png);
+//   driver_data->icons[1].driver_data    = lprint_png;
+//   driver_data->icons[1].driver_datalen = sizeof(lprint_png);
+//   driver_data->icons[2].driver_data    = lprint_large_png;
+//   driver_data->icons[2].driver_datalen = sizeof(lprint_large_png);
 
 
+
+    // Set resolution...
+    // TODO: Add support for 300x600dpi mode for QL-570/580N/700/8xx
+    driver_data->num_resolution  = 1;
+    driver_data->x_resolution[0] = driver_data->y_resolution[0] = 300;
+    driver_data->x_default       = driver_data->y_default = driver_data->x_resolution[0];
+
+    // Basically borderless...
+    driver_data->left_right = 1;
+    driver_data->bottom_top = 1;
+
+    // Supported media...
+    driver_data->num_media = (int)(sizeof(lprint_brother_ql_media) / sizeof(lprint_brother_ql_media[0]));
+    memcpy(driver_data->media, lprint_brother_ql_media, sizeof(lprint_brother_ql_media));
+
+    papplCopyString(driver_data->media_ready[0].size_name, "roll_dk2205-continuous_2.4x3.9in", sizeof(driver_data->media_ready[0].size_name));
+    papplCopyString(driver_data->media_ready[0].type, "continuous", sizeof(driver_data->media_ready[0].type));
+
+    driver_data->num_type = 2;
+    driver_data->type[0]  = "labels";
+    driver_data->type[1]  = "continuous";
+
+
+
+
+
+   return true;
 
    // //    //  int ankit_len = driver_data.num_vendor;
    //  ipp_attribute_t * ankit_preset;
    //  int count = 0;
-   
+
    // // iterate over driver data vendor options over here...
    // for(int x = 0 ; x< driver_data->num_vendor; x++)
    // {
@@ -610,7 +706,7 @@ driver_cb(
    //    }
    //    printf(" %s\n", " ");
    //  }
-   
+
 
 }
 
