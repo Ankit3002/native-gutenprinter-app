@@ -482,6 +482,18 @@ driver_cb(
    //       *driver_attrs = ippNew();
    //    }
    // }
+
+   // assign all the functions related to the job flow over here...
+   // driver_data->printfile_cb  = guten_print;
+   // driver_data->rendjob_cb    = guten_rendjob;
+   // driver_data->rendpage_cb   = guten_rendpage;
+   // driver_data->rstartjob_cb  = guten_rstartjob;
+   // driver_data->rstartpage_cb = guten_rstartpage;
+   // driver_data->rwriteline_cb = guten_rwriteline;
+   // driver_data->status_cb     = guten_status;
+   // driver_data->has_supplies  = true;
+
+
    *driver_attrs = ippNew();
 
    // char ** string_list = calloc(3, sizeof(char*));
