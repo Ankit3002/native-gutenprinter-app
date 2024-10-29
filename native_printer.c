@@ -22,6 +22,15 @@
 #include <sys/wait.h>
 #include <gutenprint/gutenprint-module.h>
 #include <pappl/pappl.h>
+#include <sys/times.h>
+#include "i18n.h"
+
+/* Solaris with gcc has problems because gcc's limits.h doesn't #define */
+/* this */
+#ifndef CHAR_BIT
+#define CHAR_BIT 8
+#endif
+
 
 // extern const char *ppdext;
 // extern const char *cups_modeldir;
@@ -450,6 +459,498 @@ static const char * const lprint_brother_ql_media[] =
   "roll_max_2.5x3600in",
   "roll_min_0.25x1in"
 };
+#define CUPS_HEADER_T cups_page_header2_t
+static int suppress_verbose_messages = 0;
+static int print_messages_as_errors = 0;
+static int suppress_messages = 0;
+static const char *Image_get_appname(stp_image_t *image);
+static volatile stp_image_status_t Image_status = STP_IMAGE_STATUS_OK;
+static const stp_string_list_t *po = NULL;
+static double total_bytes_printed = 0;
+
+
+
+/*
+ * 'Image_get_appname()' - Get the application we are running.
+ */
+
+static const char *				/* O - Application name */
+Image_get_appname(stp_image_t *image)		/* I - Image */
+{
+  (void)image;
+
+  return ("CUPS driver based on Gutenprint");
+}
+
+typedef struct
+{
+  cups_raster_t		*ras;		/* Raster stream to read from */
+  int			page;		/* Current page number */
+  int			row;		/* Current row number */
+  int			left;
+  int			right;
+  int			bottom;
+  int			top;
+  int			width;
+  int			height;
+  int			left_trim;
+  int			right_trim;
+  int			top_trim;
+  int			bottom_trim;
+  int			adjusted_width;
+  int			adjusted_height;
+  stp_dimension_t	d_left;
+  stp_dimension_t	d_right;
+  stp_dimension_t	d_bottom;
+  stp_dimension_t	d_top;
+  stp_dimension_t	d_width;
+  stp_dimension_t	d_height;
+  stp_dimension_t	d_left_trim;
+  stp_dimension_t	d_right_trim;
+  stp_dimension_t	d_bottom_trim;
+  stp_dimension_t	d_top_trim;
+  int			last_percent;
+  int			shrink_to_fit;
+  CUPS_HEADER_T		header;		/* Page header from file */
+} cups_image_t;
+
+
+/*
+ * 'Image_get_row()' - Get one row of the image.
+ */
+
+static void
+throwaway_data(int amount, cups_image_t *cups)
+{
+  unsigned char trash[4096];	/* Throwaway */
+  int block_count = amount / 4096;
+  int leftover = amount % 4096;
+  while (block_count > 0)
+    {
+      cupsRasterReadPixels(cups->ras, trash, 4096);
+      block_count--;
+    }
+  if (leftover)
+    cupsRasterReadPixels(cups->ras, trash, leftover);
+}
+
+static stp_image_status_t
+Image_get_row(stp_image_t   *image,	/* I - Image */
+	      unsigned char *data,	/* O - Row */
+	      size_t	    byte_limit,	/* I - how many bytes in data */
+	      int           row)	/* I - Row number (unused) */
+{
+  cups_image_t	*cups;			/* CUPS image */
+  int		i;			/* Looping var */
+  int 		bytes_per_line;
+  int		margin;
+  stp_image_status_t tmp_image_status = Image_status;
+  unsigned char *orig = data;           /* Temporary pointer */
+  static int warned = 0;                /* Error warning printed? */
+  int new_percent;
+  int left_margin, right_margin;
+
+  if ((cups = (cups_image_t *)(image->rep)) == NULL)
+    {
+      stp_i18n_printf(po, _("ERROR: Gutenprint image is not initialized!  "
+                            "Please report this bug to "
+			    "gimp-print-devel@lists.sourceforge.net\n"));
+      return STP_IMAGE_STATUS_ABORT;
+    }
+  bytes_per_line =
+    ((cups->adjusted_width * cups->header.cupsBitsPerPixel) + CHAR_BIT - 1) /
+    CHAR_BIT;
+
+  left_margin = ((cups->left_trim * cups->header.cupsBitsPerPixel) + CHAR_BIT - 1) /
+    CHAR_BIT;
+  right_margin = ((cups->right_trim * cups->header.cupsBitsPerPixel) + CHAR_BIT - 1) /
+    CHAR_BIT;
+  margin = cups->header.cupsBytesPerLine - left_margin - bytes_per_line -
+    right_margin;
+
+  if (cups->row < cups->header.cupsHeight)
+  {
+    if (! suppress_messages && ! suppress_verbose_messages)
+      fprintf(stderr, "DEBUG2: Gutenprint: Reading %d %d\n",
+	      bytes_per_line, cups->row);
+    while (cups->row <= row && cups->row < cups->header.cupsHeight)
+      {
+	if (left_margin > 0)
+	  {
+	    if (! suppress_messages && ! suppress_verbose_messages)
+	      fprintf(stderr, "DEBUG2: Gutenprint: Tossing left %d (%d)\n",
+		      left_margin, cups->left_trim);
+	    throwaway_data(left_margin, cups);
+	  }
+	cupsRasterReadPixels(cups->ras, data, bytes_per_line);
+	cups->row ++;
+	if (margin + right_margin > 0)
+	  {
+	    if (! suppress_messages && ! suppress_verbose_messages)
+	      fprintf(stderr, "DEBUG2: Gutenprint: Tossing right %d (%d) + %d\n",
+		      right_margin, cups->right_trim, margin);
+	    throwaway_data(margin + right_margin, cups);
+	  }
+      }
+  }
+  else
+    {
+      switch (cups->header.cupsColorSpace)
+	{
+	case CUPS_CSPACE_K:
+	case CUPS_CSPACE_CMYK:
+	case CUPS_CSPACE_KCMY:
+	case CUPS_CSPACE_CMY:
+	  memset(data, 0, bytes_per_line);
+	  break;
+	case CUPS_CSPACE_RGB:
+	case CUPS_CSPACE_W:
+	  memset(data, ((1 << CHAR_BIT) - 1), bytes_per_line);
+	  break;
+	default:
+	  stp_i18n_printf(po, _("ERROR: Gutenprint detected a bad colorspace "
+	                        "(%d)!\n"), cups->header.cupsColorSpace);
+	  return STP_IMAGE_STATUS_ABORT;
+	}
+    }
+
+  /*
+   * This exists to print non-ADSC input which has messed up the job
+   * input, such as that generated by psnup.  The output is barely
+   * legible, but it's better than the garbage output otherwise.
+   */
+  data = orig;
+  if (cups->header.cupsBitsPerPixel == 1)
+    {
+      if (warned == 0)
+	{
+	  fputs(_("WARNING: Gutenprint detected a bad color depth (1).  "
+		  "Output quality is degraded.  Are you using psnup or "
+		  "non-ADSC PostScript?\n"), stderr);
+	  warned = 1;
+	}
+      for (i = cups->adjusted_width - 1; i >= 0; i--)
+	{
+	  if ( (data[i/8] >> (7 - i%8)) &0x1)
+	    data[i]=255;
+	  else
+	    data[i]=0;
+	}
+    }
+
+  new_percent = (int) (100.0 * cups->row / cups->header.cupsHeight);
+  if (new_percent > cups->last_percent)
+    {
+      if (! suppress_verbose_messages)
+	{
+	  stp_i18n_printf(po, _("INFO: Printing page %d, %d%%\n"),
+			  cups->page + 1, new_percent);
+	  fprintf(stderr, "ATTR: job-media-progress=%d\n", new_percent);
+	}
+      cups->last_percent = new_percent;
+    }
+
+  if (tmp_image_status != STP_IMAGE_STATUS_OK)
+    {
+      if (! suppress_messages)
+	fprintf(stderr, "DEBUG: Gutenprint: Image status %d\n", tmp_image_status);
+    }
+  return tmp_image_status;
+}
+
+
+/*
+ * 'Image_height()' - Return the height of an image.
+ */
+
+static int				/* O - Height in pixels */
+Image_height(stp_image_t *image)	/* I - Image */
+{
+  cups_image_t	*cups;		/* CUPS image */
+
+
+  if ((cups = (cups_image_t *)(image->rep)) == NULL)
+    return (0);
+
+  if (! suppress_messages)
+    fprintf(stderr, "DEBUG: Gutenprint: Image_height %d\n", cups->adjusted_height);
+  return (cups->adjusted_height);
+}
+
+
+/*
+ * 'Image_init()' - Initialize an image.
+ */
+
+static void
+Image_init(stp_image_t *image)		/* I - Image */
+{
+  cups_image_t	*cups;		/* CUPS image */
+
+  if ((cups = (cups_image_t *)(image->rep)) == NULL)
+    return;
+  cups->last_percent = 0;
+
+  if (! suppress_messages)
+    stp_i18n_printf(po, _("INFO: Starting page %d...\n"), cups->page + 1);
+  /* cups->page + 1 because users expect 1-based counting */
+}
+
+/*
+ * 'Image_progress_conclude()' - Close the progress display.
+ */
+
+static void
+Image_conclude(stp_image_t *image)	/* I - Image */
+{
+  cups_image_t	*cups;		/* CUPS image */
+
+
+  if ((cups = (cups_image_t *)(image->rep)) == NULL)
+    return;
+
+  if (! suppress_messages)
+    stp_i18n_printf(po, _("INFO: Finished page %d...\n"), cups->page + 1);
+}
+
+/*
+ * 'Image_width()' - Return the width of an image.
+ */
+
+static int				/* O - Width in pixels */
+Image_width(stp_image_t *image)	/* I - Image */
+{
+  cups_image_t	*cups;		/* CUPS image */
+
+
+  if ((cups = (cups_image_t *)(image->rep)) == NULL)
+    return (0);
+
+  if (! suppress_messages)
+    fprintf(stderr, "DEBUG: Gutenprint: Image_width %d\n", cups->adjusted_width);
+  return (cups->adjusted_width);
+}
+
+
+
+/*
+ * 'cups_writefunc()' - Write data to a file...
+ */
+
+static void
+cups_writefunc(void *file, const char *buf, size_t bytes)
+{
+  FILE *prn = (FILE *)file;
+  total_bytes_printed += bytes;
+  fwrite(buf, 1, bytes, prn);
+}
+
+static void
+cups_errfunc(void *file, const char *buf, size_t bytes)
+{
+  size_t next_nl = 0;
+  size_t where = 0;
+  FILE *prn = (FILE *)file;
+  while (where < bytes)
+    {
+      if (bytes - where > 6 && strncmp(buf, "ERROR:", 6) == 0)
+	{
+	  fputs("ERROR: Gutenprint:", prn);
+	  buf += 6;
+	}
+      else if (print_messages_as_errors)
+	fputs("ERROR: Gutenprint: ", prn);
+      else if (strncmp(buf, "DEBUG", 5) != 0)
+	fputs("DEBUG: Gutenprint: ", prn);
+      while (next_nl < bytes)
+	{
+	  if (buf[next_nl++] == '\n')
+	    break;
+	}
+      fwrite(buf + where, 1, next_nl - where, prn);
+      where = next_nl;
+    }
+}
+
+static void
+cups_dbgfunc(void *file, const char *buf, size_t bytes)
+{
+  size_t next_nl = 0;
+  size_t where = 0;
+  FILE *prn = (FILE *)file;
+  while (where < bytes)
+    {
+      if (bytes - where > 6 && strncmp(buf, "ERROR:", 6) == 0)
+	{
+	  fputs("ERROR: Gutenprint:", prn);
+	  buf += 6;
+	}
+      else if (strncmp(buf, "DEBUG", 5) != 0)
+	fputs("DEBUG: Gutenprint: ", prn);
+      while (next_nl < bytes)
+	{
+	  if (buf[next_nl++] == '\n')
+	    break;
+	}
+      fwrite(buf + where, 1, next_nl - where, prn);
+      where = next_nl;
+    }
+}
+
+
+
+
+static stp_image_t theImage =
+{
+  Image_init,
+  NULL,				/* reset */
+  Image_width,
+  Image_height,
+  Image_get_row,
+  Image_get_appname,
+  Image_conclude,
+  NULL
+};
+
+
+static  cups_image_t		cups;		/* CUPS image */
+static  const char            *version_id;
+static   stp_vars_t		*default_settings;
+// rstart job function over here...
+
+static bool				// O - `true` on success, `false` on failure
+gutenprint_rstartjob(
+    pappl_job_t        *job,		// I - Job
+    pappl_pr_options_t *options,	// I - Job options
+    pappl_device_t     *device)		// I - Device
+{
+
+   // options->header === header you hve ...
+   // device ---> don't know what is the use of it...
+
+   theImage.rep = &cups;
+   stp_set_global_errfunc(cups_errfunc);
+   stp_set_global_dbgfunc(cups_dbgfunc);
+   stp_set_global_errdata(stderr);
+   stp_set_global_dbgdata(stderr);
+   stp_init();
+   version_id = stp_get_version();
+   default_settings = stp_vars_create();
+   stp_set_outfunc(default_settings, cups_writefunc);
+   stp_set_outdata(default_settings, stdout);
+
+   // 
+   return true;
+
+
+}
+
+
+
+
+// 'gutenprint_rstartpage()' - Start a page.
+//
+
+
+
+
+// static bool				// O - `true` on success, `false` on failure
+// gutenprint_rstart_page(
+//     pappl_job_t        *job,		// I - Job
+//     pappl_pr_options_t *options,	// I - Job options
+//     pappl_device_t     *device,		// I - Output device
+//     unsigned           page)		// I - Page number
+// {
+
+//    stp_vars_t		*v = NULL;
+//    stp_vars_t		*default_settings;
+//    int			fd;		/* File descriptor */
+//    cups_image_t		cups;		/* CUPS image */
+//    const char		*ppdfile;	/* PPD environment variable */
+//    const stp_printer_t	*printer;	/* Printer driver */
+//    int			num_options;	/* Number of CUPS options */
+//    cups_option_t		*options;	/* CUPS options */
+//    stp_vars_t		*v = NULL;
+//    stp_vars_t		*default_settings;
+//    int			initialized_job = 0;
+//    const char            *version_id;
+//    struct tms		tms;
+//    long			clocks_per_sec;
+//    struct timeval	t1, t2;
+//    char			*page_size_name = NULL;
+//    int			aborted = 0;
+
+
+//        /*
+//       * We don't know how many pages we're going to print, and
+//       * we need to call stp_end_job at the completion of the job.
+//       * Therefore, we need to keep v in scope after the termination
+//       * of the loop to permit calling stp_end_job then.  Therefore,
+//       * we have to free the previous page's stp_vars_t at the start
+//       * of the loop.
+//       */
+//     if (v)
+//       stp_vars_destroy(v);
+
+//      if (getenv("STP_SUPPRESS_MESSAGES"))
+//        suppress_messages = 1;
+
+//     /*
+//       * Setup printer driver variables...
+//       */
+//     if (! suppress_messages)
+//     {
+//       fprintf(stderr, "DEBUG: Gutenprint: ================ Printing page %d      ================\n", cups.page + 1);
+//       fprintf(stderr, "PAGE: %d %d\n", cups.page + 1, options->header.NumCopies);
+//     }
+//     v = initialize_page(&cups, default_settings, page_size_name);
+//     #ifdef ENABLE_CUPS_LOAD_SAVE_OPTIONS
+//           if (loaded_settings)
+//       stp_copy_vars_from(v, loaded_settings);
+//           if (save_file_name)
+//       {
+//         save_options(save_file_name, v);
+//         save_file_name = NULL;
+//       }
+//     #endif /* ENABLE_CUPS_LOAD_SAVE_OPTIONS */
+//     if (! suppress_messages)
+//     {
+//       fprintf(stderr, "DEBUG: Gutenprint: Interim page settings:\n");
+//       stp_vars_print_error(v, "DEBUG");
+//     }
+
+//     stp_merge_printvars(v, stp_printer_get_defaults(printer));
+
+//     /* Pass along Collation settings */
+//     stp_set_boolean_parameter(v, "Collate", cups.header.Collate);
+//     stp_set_boolean_parameter_active(v, "Collate", STP_PARAMETER_ACTIVE);
+//     /* Pass along Copy settings */
+//     stp_set_int_parameter(v, "NumCopies", cups.header.NumCopies);
+//     stp_set_int_parameter_active(v, "NumCopies", STP_PARAMETER_ACTIVE);
+//     /* Pass along the page number */
+//     stp_set_int_parameter(v, "PageNumber", cups.page);
+//     cups.row = 0;
+//     if (! suppress_messages)
+//       print_debug_block(v, &cups);
+//     print_messages_as_errors = 1;
+
+//     if (!initialized_job)
+//     {
+//       stp_start_job(v, &theImage);
+//       initialized_job = 1;
+//     }
+   
+// }
+
+
+// rstart endpage function over here...
+
+// rstartjob function over here...
+
+
+// rwrite line function over here...
+
+
 
 static bool
 driver_cb(

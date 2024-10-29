@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "libgen.h": "c"
+        "libgen.h": "c",
+        "pappl.h": "c",
+        "log.h": "c"
     }
 }
