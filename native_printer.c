@@ -24,6 +24,7 @@
 #include <pappl/pappl.h>
 #include <sys/times.h>
 #include "i18n.h"
+#include <ppd/ppd.h>
 
 /* Solaris with gcc has problems because gcc's limits.h doesn't #define */
 /* this */
@@ -290,6 +291,7 @@ static bool driver_cb(pappl_system_t *sytem, const char *driver_name,
 
 
 
+
 int main(int argc, char *argv[])
 {
    stp_init();
@@ -320,80 +322,6 @@ int main(int argc, char *argv[])
          guten_print_drivers[i].extension = NULL;
       }
    }
-
-   // driver call back khudse likhde...
-   // so from the make and model we have created the driver object...
-   // map the same in the
-
-   char *model = "bjc-PIXUS-iP3100";
-
-   // const stp_printer_t *printer = stp_get_printer_by_driver(model);
-   // stp_vars_t *v;
-   // const stp_vars_t *printvars;
-   // printvars = stp_printer_get_defaults(printer);
-   // v = stp_vars_create_copy(printvars);
-
-   // stp_parameter_list_t paramlist;
-   // paramlist = stp_get_parameter_list(v);
-   // size_t param_count = stp_parameter_list_count(paramlist);
-
-   // // below code is for standard common options...
-
-   // stp_parameter_t desc;
-   // int num_opts = 0;
-   // const stp_param_string_t *opt;
-   // stp_describe_parameter(v, "MediaType", &desc);
-   // if (desc.p_type == STP_PARAMETER_TYPE_STRING_LIST && desc.is_active &&
-   //     stp_string_list_count(desc.bounds.str) > 0)
-   // {
-   //    num_opts = stp_string_list_count(desc.bounds.str);
-   //    // gpprintf(fp, "*%s.Translation MediaType/%s: \"\"\n", lang, _("Media Type"));
-
-   //    for (i = 0; i < num_opts; i++)
-   //    {
-   //       opt = stp_string_list_param(desc.bounds.str, i);
-   //       printf("Values Supported ---> %s\n", opt->name);
-   //       //  gpprintf(fp, "*%s.MediaType %s/%s: \"\"\n", lang, opt->name, stp_i18n_lookup(po, opt->text));
-   //    }
-   // }
-
-   // printf("the default vavlue --> %s\n", desc.deflt.str);
-   // stp_parameter_description_destroy(&desc);
-
-   // // seeing all the options and  values in the current printer models..
-   // int l;
-   // for (l = 0; l < param_count; l++)
-   // {
-   //    const stp_parameter_t *lparam =
-   //        stp_parameter_list_param(paramlist, l);
-   //    printf("the parameter name is ----> %s\n", lparam->name);
-   //    stp_describe_parameter(v, lparam->name, &desc);
-
-   //    if (desc.p_type == STP_PARAMETER_TYPE_STRING_LIST && desc.is_active &&
-   //        stp_string_list_count(desc.bounds.str) > 0)
-   //    {
-
-   //             printf("the default value --> %s\n", desc.deflt.str);
-   //       num_opts = stp_string_list_count(desc.bounds.str);
-
-
-   //       for (i = 0; i < num_opts; i++)
-   //       {
-   //          opt = stp_string_list_param(desc.bounds.str, i);
-   //          printf("Values Supported ---> %s\n", opt->name);
-   //       }
-   //    }
-   //    else{
-   //       printf("it's something different \n");
-   //    }
-   //    printf("%s\n", " ");
-   //    stp_parameter_description_destroy(&desc);
-   // }
-
-   // pappl_system_t * system;
-   ipp_t *driver_attrs;
-   pappl_pr_driver_data_t driver_data;
-   // driver_cb(NULL, model, NULL, NULL, &driver_data, &driver_attrs, NULL );
 
     papplMainloop(argc, argv, VERSION, "Copyright &copy Ankit Pal Singh",
         count_of_printer,
@@ -429,36 +357,23 @@ is_special_option(const char *name)	/* I - Option name */
 }
 
 
-static const char * const lprint_brother_ql_media[] =
-{					// Supported QL-* media sizes
-  "oe_dk1219-round_0.47x0.47in",
-  "oe_dk1204-multi-purpose_0.66x2.1in",
-  "oe_dk1203-file-folder_0.66x3.4in",
-  "oe_dk1209-small-address_1.1x2.4in",
-  "oe_dk1201-address_1.1x3.5in",
-  "oe_dk1208-large-address_1.4x3.5in",
-  "oe_dk1240-large-multi-purpose_1.9x4in",
-  "oe_dk1207-cd-dvd_2.2x2.2in",
-  "oe_dk1202-shipping_2.4x3.9in",
-
-  "na_index-4x6_4x6in",				// DK1241/1247
-
-  "roll_dk2113-continuous-film_2.4x600in",	// Black/Clear
-  "roll_dk2205-continuous_2.4x1200in",		// Black on White
-  "roll_dk2210-continuous_1.1x1200in",
-  "roll_dk2211-continuous-film_1.1x600in",
-  "roll_dk2212-continuous-film_2.4x600in",
-  "roll_dk2214-continuous_0.47x1200in",
-  "roll_dk2243-continuous_4x1200in",		// Black on White
-  "roll_dk2246-continuous_4.07x1200in",		// Black on White
-  "roll_dk2251-continuous_2.4x600in",		// Black/Red on White
-  "roll_dk2606-continuous-film_2.4x600in",	// Black/Yellow
-  "roll_dk4205-continuous-removable_2.4x1200in",// Black on White
-  "roll_dk4605-continuous-removable_2.4x1200in",// Black/Yellow on White
-
-  "roll_max_2.5x3600in",
-  "roll_min_0.25x1in"
+static const char * const pcl_hp_laserjet_media[] =
+{       // Supported media sizes for HP Laserjet printers
+  "na_ledger_11x17in",
+  "na_legal_8.5x14in",
+  "na_letter_8.5x11in",
+  "na_executive_7x10in",
+  "iso_a3_297x420mm",
+  "iso_a4_210x297mm",
+  "iso_a5_148x210mm",
+  "jis_b5_182x257mm",
+  "iso_b5_176x250mm",
+  "na_number-10_4.125x9.5in",
+  "iso_c5_162x229mm",
+  "iso_dl_110x220mm",
+  "na_monarch_3.875x7.5in"
 };
+
 #define CUPS_HEADER_T cups_page_header2_t
 static int suppress_verbose_messages = 0;
 static int print_messages_as_errors = 0;
@@ -816,41 +731,127 @@ static stp_image_t theImage =
 static  cups_image_t		cups;		/* CUPS image */
 static  const char            *version_id;
 static   stp_vars_t		*default_settings;
-// rstart job function over here...
+static  int			num_options;	/* Number of CUPS options */
+static  cups_option_t		*options;	/* CUPS options */
 
-static bool				// O - `true` on success, `false` on failure
-gutenprint_rstartjob(
+
+// // rstart job function over here...
+
+// static bool				// O - `true` on success, `false` on failure
+// gutenprint_rstartjob(
+//     pappl_job_t        *job,		// I - Job
+//     pappl_pr_options_t *options,	// I - Job options
+//     pappl_device_t     *device)		// I - Device
+// {
+
+//    const pappl_printer_t * printer;
+//    const stp_printer_t *p; /* Pointer to printer driver */
+//    // options->header === header you hve ...
+//    // device ---> don't know what is the use of it...
+//    const char *ppd_infix;
+//    const char filename[1024];
+//    const char *ppdext = ".ppd";
+//    const char *gpext = "";
+//    const char *prefix;
+//    theImage.rep = &cups;
+//    printer = job->printer;
+//    p = stp_get_printer_by_driver(printer->name);
+//    stp_set_global_errfunc(cups_errfunc);
+//    stp_set_global_dbgfunc(cups_dbgfunc);
+//    stp_set_global_errdata(stderr);
+//    stp_set_global_dbgdata(stderr);
+//    stp_init();
+//    version_id = stp_get_version();
+//    default_settings = stp_vars_create();
+//    stp_set_outfunc(default_settings, cups_writefunc);
+//    stp_set_outdata(default_settings, stdout);
+
+//    // set the options into options and num_options ... from options array...
+
+//    ppd_infix = "";
+//    prefix = CUPS_MODELDIR;
+
+//    #ifdef GENERATE_SIMPLIFIED_PPDS
+//       ppd_infix = ".sim";
+
+//    #endif
+
+//    #ifdef GENERATE_NOCOLOR_PPDS
+//       ppd_infix = ".nc";
+//    #endif
+
+   
+
+//   snprintf(filename, sizeof(filename) - 1, "%s/stp-%s.%s%s%s%s",
+// 	   prefix, stp_printer_get_driver(p), GUTENPRINT_RELEASE_VERSION,
+// 	   ppd_infix, ppdext, gpext);
+
+//    // you have the file name now figure out the pagesize name over here...
+
+//    printf("the name of the ppd file generated ---> %s\n", filename);
+//    // 
+//    return true;
+
+
+// }
+
+bool
+rend_job(
+    pappl_job_t        *job,		// I - Job
+    pappl_pr_options_t *options,	// I - Options
+    pappl_device_t     *device)	
+{
+   return true;
+}
+
+bool rend_page(
+       pappl_job_t        *job,		// I - Job
+    pappl_pr_options_t *options,	// I - Job options
+    pappl_device_t     *device,		// I - Device
+    unsigned           page
+)
+{
+   return true;
+}
+
+bool rstart_page(
+       pappl_job_t        *job,		// I - Job
+    pappl_pr_options_t *options,	// I - Job options
+    pappl_device_t     *device,		// I - Device
+    unsigned           page
+)
+{
+   return true;
+}
+
+bool rwriteline(
+    pappl_job_t         *job,		// I - Job
+    pappl_pr_options_t  *options,	// I - Job options
+    pappl_device_t      *device,	// I - Device
+    unsigned            y,		// I - Line number
+    const unsigned char *pixels
+)
+{
+   return true;
+}
+
+// temporary functoins for raster processing over here...
+
+bool 
+rstart_job(
     pappl_job_t        *job,		// I - Job
     pappl_pr_options_t *options,	// I - Job options
-    pappl_device_t     *device)		// I - Device
+    pappl_device_t     *device)	
 {
-
-   // options->header === header you hve ...
-   // device ---> don't know what is the use of it...
-
-   theImage.rep = &cups;
-   stp_set_global_errfunc(cups_errfunc);
-   stp_set_global_dbgfunc(cups_dbgfunc);
-   stp_set_global_errdata(stderr);
-   stp_set_global_dbgdata(stderr);
-   stp_init();
-   version_id = stp_get_version();
-   default_settings = stp_vars_create();
-   stp_set_outfunc(default_settings, cups_writefunc);
-   stp_set_outdata(default_settings, stdout);
-
-   // 
-   return true;
-
+return true;
 
 }
 
 
 
-
 // 'gutenprint_rstartpage()' - Start a page.
 //
-
+ 
 
 
 
@@ -954,7 +955,7 @@ gutenprint_rstartjob(
 
 static bool
 driver_cb(
-   pappl_system_t *sytem,
+   pappl_system_t *system,
    const char *driver_name,
    const char *device_uri,
    const char *device_id,
@@ -966,7 +967,10 @@ driver_cb(
 
    // driver name is passed in the function ...
    // for the specific printer
-
+  (void)cbdata;
+  (void)device_uri;
+  (void)device_id;
+  (void)driver_attrs;
 
    stp_init();
       // char *model = "bjc-PIXUS-iP3100";
@@ -975,7 +979,6 @@ driver_cb(
    stp_vars_t *v;
    const stp_vars_t *printvars;
    printvars = stp_printer_get_defaults(printer);
-
    // if(printer != NULL)
    // {
    //    if(*driver_attrs == NULL)
@@ -996,21 +999,23 @@ driver_cb(
 
 
    *driver_attrs = ippNew();
-
-   // char ** string_list = calloc(3, sizeof(char*));
-
-   // string_list[0]= "brock";
-   // string_list[1] = "lesnar";
-   // string_list[2] = "lesdnar";
-
-   // ippAddStrings(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_KEYWORD, "Ankit", 3, NULL, (const char *const *)string_list);
    driver_data->num_vendor = 0;
    v = stp_vars_create_copy(printvars);
 
+
+    /* Pages-per-minute for monochrome and color */
+    driver_data->ppm_color = 1;
+   /* Four color spaces - black (1-bit and 8-bit), grayscale, and sRGB */
+    driver_data->raster_types = PAPPL_PWG_RASTER_TYPE_BLACK_1 | PAPPL_PWG_RASTER_TYPE_BLACK_8 | PAPPL_PWG_RASTER_TYPE_SGRAY_8 | PAPPL_PWG_RASTER_TYPE_SRGB_8;
+
+    /* Color modes: auto (default), monochrome, and color */
+    driver_data->color_supported = PAPPL_COLOR_MODE_AUTO;
+    driver_data->color_default   = PAPPL_COLOR_MODE_AUTO;
    stp_parameter_list_t paramlist;
    paramlist = stp_get_parameter_list(v);
    size_t param_count = stp_parameter_list_count(paramlist);
 
+   printf("The lenght of param count ==> %d\n", param_count );
    // below code is for standard common options...
 
    stp_parameter_t desc;
@@ -1041,6 +1046,7 @@ driver_cb(
       if(desc.is_active)
       {
          // now over here...
+         printf("the name of the opti--_> %s\n", desc.name);
          snprintf(ipp_supported, sizeof(ipp_supported), "%s-supported", desc.name);
          snprintf(ipp_default, sizeof(ipp_default), "%s-default", desc.name);
          driver_data->vendor[driver_data->num_vendor] = strdup(desc.name);
@@ -1052,12 +1058,11 @@ driver_cb(
             num_opts = stp_string_list_count(desc.bounds.str);
             option_list = calloc(num_opts , sizeof(char *));
             char * default_value = strdup(desc.deflt.str);
+            printf("the deflt value --> %s\n", default_value);
             for(i=0;i < num_opts; i++)
             {
                opt = stp_string_list_param(desc.bounds.str, i);
                option_list[i] = stp_strdup(opt->name);
-               // printf("the value ----- over ---> %s\n", option_list[i]);
-               // now opt->name is the value of the
             }
             // add in the ipp object over here...
             ippAddStrings(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_KEYWORD, ipp_supported,num_opts, NULL, (const char *const *)option_list);
@@ -1065,6 +1070,7 @@ driver_cb(
             break;
 
             case STP_PARAMETER_TYPE_RAW:
+             printf("the deflt value --> %s\n", desc.name);
                ippAddString(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_KEYWORD, ipp_supported, NULL, desc.name);
                ippAddString(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_KEYWORD, ipp_default, NULL, desc.name);
                break;
@@ -1078,35 +1084,16 @@ driver_cb(
                break;
 
             case STP_PARAMETER_TYPE_DOUBLE:
-               // printf("the value of the lower bound --> %f\n", desc.bounds.dbl.lower);
-               // printf("the value of the upperboudn --> %f\n", desc.bounds.dbl.upper );
-               // printf("print --> value --> %s\n", desc.name);
-               // printf("the default  value --> %f\n", desc.deflt.dbl);
-               // printf("%s\n", " ");
                ippAddRange(*driver_attrs, IPP_TAG_PRINTER, ipp_supported, desc.bounds.dbl.lower *100, desc.bounds.dbl.upper *100);
                ippAddInteger(*driver_attrs ,IPP_TAG_PRINTER, IPP_TAG_INTEGER, ipp_default, desc.deflt.dbl*100);
                break;
 
             case STP_PARAMETER_TYPE_DIMENSION:
-               // printf("print --> value --> %s\n", desc.name);
-               // for(int x = (int) desc.bounds.dimension.lower; x <= (int) desc.bounds.dimension.upper; x++)
-               // {
-               //    printf("The value  with dimension associated is --> %f\n", (double) x * 25.4 / 72.0);
-               // }
-               // printf("%s\n" , " ");
-               // printf("the default ---value =-> %f\n", desc.deflt.dimension);
                ippAddRange(*driver_attrs, IPP_TAG_PRINTER, ipp_supported, (int)desc.bounds.dimension.lower, (int)desc.bounds.dimension.upper);
                ippAddInteger(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_INTEGER, ipp_default, (int)desc.deflt.dimension);
                break;
 
             case STP_PARAMETER_TYPE_INT:
-
-               // for(int x = desc.bounds.integer.lower; x <= (int) desc.bounds.integer.upper ;x++)
-               // {
-               //    printf("The value  with dimension associated is --> %d\n", x);
-               // }
-
-               //  printf("the default  value we have is --> %d\n", desc.deflt.integer);
                ippAddRange(*driver_attrs, IPP_TAG_PRINTER, ipp_supported, desc.bounds.integer.lower, desc.bounds.integer.upper);
                ippAddInteger(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_INTEGER, ipp_default, desc.deflt.integer);
                break;
@@ -1122,68 +1109,165 @@ driver_cb(
    }
 
 
-   // store the static attributes over here ...
-   // driver_data->num_features = 1;
-//   driver_data->features[0]  = "airprint-2.1";
+   // Store all the static attributes over here...
+   // AirPrint version...
+   driver_data->num_features = 1;
+   driver_data->features[0]  = "airprint-2.1";
 
-  // Pages per minute (interpret as "labels per minute")
-  driver_data->ppm = 60;
+   // Pages per minute (interpret as "labels per minute")
 
-  // "printer-kind" values...
-  driver_data->kind = PAPPL_KIND_LABEL;
+   // "printer-kind" values...
+   driver_data->kind = PAPPL_KIND_LABEL;
 
-  // Color values...
-  driver_data->color_supported = PAPPL_COLOR_MODE_AUTO | PAPPL_COLOR_MODE_MONOCHROME | PAPPL_COLOR_MODE_BI_LEVEL;
-  driver_data->color_default   = PAPPL_COLOR_MODE_MONOCHROME;
-  driver_data->raster_types    = PAPPL_PWG_RASTER_TYPE_BLACK_1 | PAPPL_PWG_RASTER_TYPE_BLACK_8 | PAPPL_PWG_RASTER_TYPE_SGRAY_8;
+   // Color values...
+   driver_data->color_supported = PAPPL_COLOR_MODE_AUTO | PAPPL_COLOR_MODE_MONOCHROME | PAPPL_COLOR_MODE_BI_LEVEL;
+   driver_data->color_default   = PAPPL_COLOR_MODE_MONOCHROME;
+   driver_data->raster_types    = PAPPL_PWG_RASTER_TYPE_BLACK_1 | PAPPL_PWG_RASTER_TYPE_BLACK_8 | PAPPL_PWG_RASTER_TYPE_SGRAY_8;
 
-  // "print-quality-default" value...
-  driver_data->quality_default = IPP_QUALITY_NORMAL;
+   // "print-quality-default" value...
+   driver_data->quality_default = IPP_QUALITY_NORMAL;
 
-  // "sides" values...
-  driver_data->sides_supported = PAPPL_SIDES_ONE_SIDED;
-  driver_data->sides_default   = PAPPL_SIDES_ONE_SIDED;
+   // "sides" values...
+   driver_data->sides_supported = PAPPL_SIDES_ONE_SIDED;
+   driver_data->sides_default   = PAPPL_SIDES_ONE_SIDED;
 
-  // "orientation-requested-default" value...
-  driver_data->orient_default = IPP_ORIENT_NONE;
+   // "orientation-requested-default" value...
+   driver_data->orient_default = IPP_ORIENT_NONE;
 
-  // Media capabilities...
-  driver_data->input_face_up  = true;
-  driver_data->output_face_up = true;
+   // Media capabilities...
+   driver_data->input_face_up  = true;
+   driver_data->output_face_up = true;
 
-//   // Standard icons...
-//   driver_data->icons[0].driver_data    = lprint_small_png;
-//   driver_data->icons[0].driver_datalen = sizeof(lprint_small_png);
-//   driver_data->icons[1].driver_data    = lprint_png;
-//   driver_data->icons[1].driver_datalen = sizeof(lprint_png);
-//   driver_data->icons[2].driver_data    = lprint_large_png;
-//   driver_data->icons[2].driver_datalen = sizeof(lprint_large_png);
+   driver_data->testpage_cb = NULL;
 
 
+ 
 
-    // Set resolution...
-    // TODO: Add support for 300x600dpi mode for QL-570/580N/700/8xx
+   // set all that happens according to each driver... in lprint...
+   driver_data->format = "application/vnd.cups-raster";
+
+   driver_data->ppm = 1;
+
+   // here validating the driver function of pappl...
+
+   driver_data->make_and_model[0] = strdup(driver_name);
+
+
+       // Tape printers operate at 180dpi
     driver_data->num_resolution  = 1;
-    driver_data->x_resolution[0] = driver_data->y_resolution[0] = 300;
-    driver_data->x_default       = driver_data->y_default = driver_data->x_resolution[0];
+    driver_data->x_default = 180;
+    driver_data->y_default = 180;
+    driver_data->x_resolution[0] = 180;
+    driver_data->y_resolution[0] = 180;
 
-    // Basically borderless...
+   //  data->x_default = data->y_default = 180;
+
     driver_data->left_right = 1;
     driver_data->bottom_top = 1;
 
-    // Supported media...
-    driver_data->num_media = (int)(sizeof(lprint_brother_ql_media) / sizeof(lprint_brother_ql_media[0]));
-    memcpy(driver_data->media, lprint_brother_ql_media, sizeof(lprint_brother_ql_media));
 
-    papplCopyString(driver_data->media_ready[0].size_name, "roll_dk2205-continuous_2.4x3.9in", sizeof(driver_data->media_ready[0].size_name));
-    papplCopyString(driver_data->media_ready[0].type, "continuous", sizeof(driver_data->media_ready[0].type));
-
-    driver_data->num_type = 2;
-    driver_data->type[0]  = "labels";
-    driver_data->type[1]  = "continuous";
+   // assigning the functions over here...
+   driver_data->rstartjob_cb = rstart_job;
+   driver_data->rendjob_cb = rend_job;
+   driver_data->rstartpage_cb = rstart_page;
+   driver_data->rwriteline_cb = rwriteline;
+   driver_data->rendpage_cb = rend_page;
 
 
+   // VALIDATING READY OVER HERE....
 
+    /* Make and model name */
+    papplCopyString(driver_data->make_and_model, driver_name, sizeof(driver_data->make_and_model));
+
+    /* Pages-per-minute for monochrome and color */
+    driver_data->ppm = 1;
+
+    /* Three resolutions - 150dpi, 300dpi (default), and 600dpi */
+    driver_data->num_resolution  = 3;
+    driver_data->x_resolution[0] = 150;
+    driver_data->y_resolution[0] = 150;
+    driver_data->x_resolution[1] = 300;
+    driver_data->y_resolution[1] = 300;
+    driver_data->x_resolution[2] = 600;
+    driver_data->y_resolution[2] = 600;
+    driver_data->x_default = driver_data->y_default = 300;
+
+    driver_data->raster_types = PAPPL_PWG_RASTER_TYPE_BLACK_1 | PAPPL_PWG_RASTER_TYPE_BLACK_8 | PAPPL_PWG_RASTER_TYPE_SGRAY_8;
+
+    driver_data->color_supported = PAPPL_COLOR_MODE_MONOCHROME;
+    driver_data->color_default   = PAPPL_COLOR_MODE_MONOCHROME;
+
+    driver_data->num_media = (int)(sizeof(pcl_hp_laserjet_media) / sizeof(pcl_hp_laserjet_media[0]));
+    memcpy(driver_data->media, pcl_hp_laserjet_media, sizeof(pcl_hp_laserjet_media));
+
+    driver_data->sides_supported = PAPPL_SIDES_ONE_SIDED | PAPPL_SIDES_TWO_SIDED_LONG_EDGE | PAPPL_SIDES_TWO_SIDED_SHORT_EDGE;
+    driver_data->sides_default   = PAPPL_SIDES_ONE_SIDED;
+
+    driver_data->num_source = 7;
+    driver_data->source[0]  = "default";
+    driver_data->source[1]  = "tray-1";
+    driver_data->source[2]  = "tray-2";
+    driver_data->source[3]  = "tray-3";
+    driver_data->source[4]  = "tray-4";
+    driver_data->source[5]  = "manual";
+    driver_data->source[6]  = "envelope";
+
+    /* Media types (MSN names) */
+    driver_data->num_type = 6;
+    driver_data->type[0]  = "stationery";
+    driver_data->type[1]  = "stationery-letterhead";
+    driver_data->type[2]  = "cardstock";
+    driver_data->type[3]  = "labels";
+    driver_data->type[4]  = "envelope";
+    driver_data->type[5]  = "transparency";
+
+    driver_data->left_right = 635;	// 1/4" left and right
+    driver_data->bottom_top = 423;	// 1/6" top and bottom
+
+    for (i = 0; i < driver_data->num_source; i ++)
+    {
+      if (strcmp(driver_data->source[i], "envelope"))
+        snprintf(driver_data->media_ready[i].size_name, sizeof(driver_data->media_ready[i].size_name), "na_letter_8.5x11in");
+      else
+        snprintf(driver_data->media_ready[i].size_name, sizeof(driver_data->media_ready[i].size_name), "env_10_4.125x9.5in");
+    }
+
+
+
+
+     // Fill out ready and default media (default == ready media from the first source)
+  for (i = 0; i < driver_data->num_source; i ++)
+  {
+    pwg_media_t *pwg;			/* Media size information */
+
+    /* Use US Letter for regular trays, #10 envelope for the envelope tray */
+    if (!strcmp(driver_data->source[i], "envelope"))
+      papplCopyString(driver_data->media_ready[i].size_name, "na_number-10_4.125x9.5in", sizeof(driver_data->media_ready[i].size_name));
+    else
+      papplCopyString(driver_data->media_ready[i].size_name, "na_letter_8.5x11in", sizeof(driver_data->media_ready[i].size_name));
+
+    /* Set margin and size information */
+    if ((pwg = pwgMediaForPWG(driver_data->media_ready[i].size_name)) != NULL)
+    {
+      driver_data->media_ready[i].bottom_margin = driver_data->bottom_top;
+      driver_data->media_ready[i].left_margin   = driver_data->left_right;
+      driver_data->media_ready[i].right_margin  = driver_data->left_right;
+      driver_data->media_ready[i].size_width    = pwg->width;
+      driver_data->media_ready[i].size_length   = pwg->length;
+      driver_data->media_ready[i].top_margin    = driver_data->bottom_top;
+      papplCopyString(driver_data->media_ready[i].source, driver_data->source[i], sizeof(driver_data->media_ready[i].source));
+      papplCopyString(driver_data->media_ready[i].type, driver_data->type[0],  sizeof(driver_data->media_ready[i].type));
+    }
+  }
+
+
+   driver_data->media_default = driver_data->media_ready[0];
+
+   //  data->num_media = (int)(sizeof(lprint_dymo_tape) / sizeof(lprint_dymo_tape[0]));
+   //  memcpy(data->media, lprint_dymo_tape, sizeof(lprint_dymo_tape));
+
+   //  data->num_source = 1;
+   //  data->source[0]  = "main-roll";
 
 
    return true;
