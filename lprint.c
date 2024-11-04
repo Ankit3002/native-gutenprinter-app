@@ -24,6 +24,7 @@
 #include <pappl/pappl.h>
 #include <sys/times.h>
 #include "i18n.h"
+#define cups_page_header2_t cups_page_header_t
 #include <ppd/ppd.h>
 
 /* Solaris with gcc has problems because gcc's limits.h doesn't #define */
@@ -1518,19 +1519,18 @@ gutenprint_rstartjob(
   cupsFreeOptions(cups_num_options, cups_options);
   ppdClose(ppd);
 
+
   cups.page = 0;
 
   if (! suppress_messages)
     fprintf(stderr, "DEBUG: Gutenprint: About to start printing loop.\n");
-  theImage.rep = &cups;
-
    return true;
 
 }
 
 static size_t buffer_size ;
 static unsigned char *buffer ;
-size_t current_pos ;
+size_t current_pos = 0 ;
 
 bool gutenprint_rstart_page(
        pappl_job_t        *job,		// I - Job
@@ -1602,24 +1602,6 @@ bool gutenprint_rstart_page(
     initialized_job = 1;
   }
 
-  if(!stp_print(vars, &theImage))
-  {
-    if (Image_status != STP_IMAGE_STATUS_ABORT)
-    {
-      fprintf(stderr, "DEBUG: Gutenprint: Options failed to verify.\n");
-      fprintf(stderr, "DEBUG: Gutenprint: Make sure that you are using ESP Ghostscript rather\n");
-      fprintf(stderr, "DEBUG: Gutenprint: than GNU or AFPL Ghostscript with CUPS.\n");
-      fprintf(stderr, "DEBUG: Gutenprint: If this is not the cause, set LogLevel to debug to identify the problem.\n");
-    }
-    aborted = 1;
-    // you have to stop the loop basically return false,..
-    return false;
-  }
-    print_messages_as_errors = 0;
-
-    fflush(stdout);
-
-
    return true;
 }
 
@@ -1660,12 +1642,24 @@ bool gutenprint_rend_page(
     unsigned           page
 )
 {
-  // printf("ye jayega --> %s\n", buffer);
-
+  cups.row = 0;
   unsigned bytes_written = cupsRasterWritePixels(cups.ras, buffer, buffer_size);
   printf("the number of bytes written --> %d\n", bytes_written);
   
   cups.page = page;
+
+  if (!stp_print(vars, &theImage))
+  {
+    if (Image_status != STP_IMAGE_STATUS_ABORT)
+      {
+        fprintf(stderr, "DEBUG: Gutenprint: Options failed to verify.\n");
+        fprintf(stderr, "DEBUG: Gutenprint: Make sure that you are using ESP Ghostscript rather\n");
+        fprintf(stderr, "DEBUG: Gutenprint: than GNU or AFPL Ghostscript with CUPS.\n");
+        fprintf(stderr, "DEBUG: Gutenprint: If this is not the cause, set LogLevel to debug to identify the problem.\n");
+      }
+      aborted = 1;
+      return false;
+  }
     /*
     * Purge any remaining bitmap data...
     */
@@ -1711,41 +1705,10 @@ gutenprint_rend_job(
     stp_vars_destroy(default_settings);
     if (page_size_name)
       stp_free(page_size_name);
-    // if (fd != 0)
-    //   close(fd);
     return aborted ? 1 : 0;
-
-
-
 
    return true;
 }
-
-
-
-
-// temporary functoins for raster processing over here...
-
-// bool 
-// rstart_job(
-//     pappl_job_t        *job,		// I - Job
-//     pappl_pr_options_t *options,	// I - Job options
-//     pappl_device_t     *device)	
-// {
-// return true;
-
-// }
-
-
-
-
-
-// rstart endpage function over here...
-
-// rstartjob function over here...
-
-
-// rwrite line function over here...
 
 
 
@@ -1784,12 +1747,7 @@ driver_cb(
    // }
 
    // assign all the functions related to the job flow over here...
-   // driver_data->printfile_cb  = guten_print;
-   // driver_data->rendjob_cb    = guten_rendjob;
-   // driver_data->rendpage_cb   = guten_rendpage;
-   // driver_data->rstartjob_cb  = guten_rstartjob;
-   // driver_data->rstartpage_cb = guten_rstartpage;
-   // driver_data->rwriteline_cb = guten_rwriteline;
+
    // driver_data->status_cb     = guten_status;
    // driver_data->has_supplies  = true;
 
