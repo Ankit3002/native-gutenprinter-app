@@ -3,6 +3,7 @@
         "libgen.h": "c",
         "pappl.h": "c",
         "log.h": "c",
-        "i18n.h": "c"
+        "i18n.h": "c",
+        "*.in": "cpp"
     }
 }

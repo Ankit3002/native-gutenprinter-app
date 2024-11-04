@@ -12,7 +12,7 @@
 
 
 # Version number...
-LPRINT_VERSION	=	1.3.2
+LPRINT_VERSION	=	@LPRINT_VERSION@
 
 
 # Languages we have localized messages for...
@@ -27,7 +27,7 @@ CC		=	gcc
 CFLAGS		=	-I.. -fPIC  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include  -I/usr/include/p11-kit-1 -D_REENTRANT  $(CPPFLAGS) $(OPTIM) $(WARNINGS)
 CPPFLAGS	=	 -D_FORTIFY_SOURCE=2 -D__USE_MISC -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64
 CSFLAGS		=	-s "$${CODESIGN_IDENTITY:=-}" --timestamp -o runtime
-INSTALL		=	/home/ank/Documents/lprint/install-sh
+INSTALL		=	/home/ank/Documents/native-gutenprinter-app/install-sh
 LDFLAGS		=	-fPIE -pie  $(OPTIM)
 LIBS		=	 -L/usr/local/lib -lpappl -lcups3  -L/usr/local/lib -lgutenprint  -lcups  -lm
 MKDIR		=	/usr/bin/mkdir -p
@@ -90,19 +90,11 @@ MAN5		=	\
 			man/lprint.conf.5
 
 OBJS		=	\
-			lprint.o \
+			gutenprint-printer-app.o \
 			i18n.o \
-			lprint-brother.o \
-			lprint-common.o \
-			lprint-cpcl.o \
-			lprint-dymo.o \
-			lprint-epl2.o \
-			lprint-sii.o \
-			lprint-testpage.o \
-			lprint-tspl.o \
-			lprint-zpl.o
+
 TARGETS		=	\
-			lprint
+			gutenprint-printer-app
 
 
 TESTOBJS	=	\
@@ -158,7 +150,7 @@ test:	$(TARGETS) $(TESTTARGETS)
 
 
 # LPrint program...
-lprint:	$(OBJS)
+gutenprint-printer-app:	$(OBJS)
 	echo Linking $@...
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 	if test `uname` = Darwin; then \
@@ -193,16 +185,9 @@ resheaders:
 
 
 # Dependencies...
-$(OBJS) $(TESTOBJS):	config.h lprint.h Makefile
+$(OBJS) $(TESTOBJS):	config.h Makefile
 lprint.o:	\
-		lprint-brother.h \
-		lprint-cpcl.h \
 		i18n.h \
-		lprint-dymo.h \
-		lprint-epl2.h \
-		lprint-sii.h \
-		lprint-tspl.h \
-		lprint-zpl.h \
 		static-resources/lprint-css.h \
 		static-resources/lprint-png.h \
 		static-resources/lprint-large-png.h \

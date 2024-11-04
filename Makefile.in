@@ -90,18 +90,11 @@ MAN5		=	\
 			man/lprint.conf.5
 
 OBJS		=	\
-			lprint.o \
-			lprint-brother.o \
-			lprint-common.o \
-			lprint-cpcl.o \
-			lprint-dymo.o \
-			lprint-epl2.o \
-			lprint-sii.o \
-			lprint-testpage.o \
-			lprint-tspl.o \
-			lprint-zpl.o
+			gutenprint-printer-app.o \
+			i18n.o \
+
 TARGETS		=	\
-			lprint
+			gutenprint-printer-app
 
 
 TESTOBJS	=	\
@@ -157,7 +150,7 @@ test:	$(TARGETS) $(TESTTARGETS)
 
 
 # LPrint program...
-lprint:	$(OBJS)
+gutenprint-printer-app:	$(OBJS)
 	echo Linking $@...
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 	if test `uname` = Darwin; then \
@@ -192,15 +185,9 @@ resheaders:
 
 
 # Dependencies...
-$(OBJS) $(TESTOBJS):	config.h lprint.h Makefile
+$(OBJS) $(TESTOBJS):	config.h Makefile
 lprint.o:	\
-		lprint-brother.h \
-		lprint-cpcl.h \
-		lprint-dymo.h \
-		lprint-epl2.h \
-		lprint-sii.h \
-		lprint-tspl.h \
-		lprint-zpl.h \
+		i18n.h \
 		static-resources/lprint-css.h \
 		static-resources/lprint-png.h \
 		static-resources/lprint-large-png.h \
