@@ -2,6 +2,7 @@
     "files.associations": {
         "libgen.h": "c",
         "pappl.h": "c",
-        "log.h": "c"
+        "log.h": "c",
+        "i18n.h": "c"
     }
 }
