@@ -1,27 +1,17 @@
-name: lprint
+name: gutenprint-printer-app
 base: core22
-version: "1.3.2"
-summary: A Label Printer Application
+version: "1.0.0"
+grade : stable
+summary: A Native Printer Application
 description: |
-   LPrint implements printing for a variety of common label and receipt printers
-   connected via network or USB.  Features include:
+  The Native Gutenprint Printer Application is a PAPPL (Printer Application
+  Framework) based Printer Application to support printers using the
+  Gutenprint printer driver.
 
-   - A single executable handles spooling, status, and server functionality.
-   - Multiple printer support.
-   - Each printer implements an IPP Everywhere™ print service and is compatible
-     with the driverless printing support in iOS, macOS, and Linux clients.
-   - Each printer can support options such as label modes, tear-off offsets,
-     media tracking, media top offset, print darkness, resolution, roll
-     selection, and speed.
-   - Each printer can print "raw", Apple/PWG Raster, and/or PNG files.
-
-   For more information, see the file "DOCUMENTATION.md", the man pages in the
-   "man" directory, and/or the LPrint project page at
-   "https://www.msweet.org/lprint".
-
+adopt-info : gutenprint
 grade: stable
 confinement: strict
-icon: static-resources/lprint.png
+icon: static-resources/gutenprint-printer-app.png
 
 architectures:
   - build-on: amd64
@@ -29,14 +19,18 @@ architectures:
   - build-on: armhf
 
 apps:
-    lprint:
-        command: bin/lprint
-        plugs: [avahi-control, home, network, network-bind, network-manager, raw-usb]
-
-    lprint-server:
-        command: bin/lprint-server
-        daemon: simple
-        plugs: [avahi-control, home, network, network-bind, network-manager, raw-usb]
+  gutenprint-printer-app-server:
+    command: scripts/run-gutenprint-printer-app-server
+    daemon: simple
+    # Use a systemd timeout longer than 1 min as PAPPL has a 1-minute
+    # shutdown timeout if there are pending jobs for which the printer
+    # is not responding. This way we avoid the Printer Application
+    # getting killed and shut down uncleanly.
+    stop-timeout: 70s
+    plugs: [avahi-control, home, network, network-bind, raw-usb]
+  gutenprint-printer-app:
+    command: scripts/run-gutenprint-printer-app
+    plugs: [avahi-control, home, network, network-bind, raw-usb]
 
 hooks:
     configure:
@@ -52,14 +46,390 @@ parts:
         stage-packages: [libavahi-client3]
 
     pappl:
-        plugin: autotools
-        autotools-configure-parameters: [--disable-shared,--enable-libjpeg,--enable-libpng,--enable-libusb]
-        source-type: git
-        source: https://github.com/michaelrsweet/pappl.git
-        source-branch: v1.4.x
-        after: [libcups3]
-        build-packages: [libavahi-client-dev, libjpeg8-dev, libpam-dev, libpng-dev, libssl-dev, libusb-1.0-0-dev, zlib1g-dev]
-        stage-packages: [libavahi-client3, libjpeg8, libpng16-16, libusb-1.0-0]
+      source: https://github.com/michaelrsweet/pappl
+      source-type: git
+      source-tag: 'v1.4.7'
+      source-depth: 1
+  # ext:updatesnap
+  #   version-format:
+  #     lower-than: '2'
+  #     no-9x-revisions: true
+      plugin: autotools
+      override-build: |
+        set -eux
+        # Raise the supported number of vendor-specific options/attributes in
+        # PAPPL to 256, as the original 32 is too small for Gutenprint's
+        # expert PPDs
+        perl -p -i -e 's/(define\s+PAPPL_MAX_VENDOR\s+)32/\1 256/' pappl/printer.h
+        # De-activate log-rotating. It does not work with the forked processes
+        # of the filters
+        perl -p -i -e 's/(system->logmaxsize\s+=).*/\1 0;/' pappl/system.c
+        # As we do not use PAPPL's own backends but the CUPS backends using the
+        # "cups" device scheme of pappl-retrofit, we let the manual "Network
+        # Printer" device on the "Add Printer" page of the web interface use a
+        # "cups:socket://..." URI instead of simply "socket://..."
+        perl -p -i -e 's/(httpAssembleURI\(.*?)"socket"(.*?\))/\1"cups:socket"\2/' pappl/system-webif.c
+        # PAPPL's build system does not insert the LDFLAGS when linking.
+        # Patching Makedefs.in to fix this
+        perl -p -i -e 's/^(\s*DSOFLAGS\s*=\s*\S*\s+)/\1\$\(LDFLAGS\) /' Makedefs.in
+        craftctl default
+      autotools-configure-parameters:
+        - --prefix=/usr
+        - --with-papplstatedir=/var/snap/gutenprint-printer-app/common
+        - --with-papplsockdir=/var/snap/gutenprint-printer-app/common/tmp
+        - --enable-libjpeg
+        - --enable-libpng
+        - --enable-libusb
+        - --with-dnssd=avahi
+      build-packages:
+        - libavahi-client-dev
+        - libgnutls28-dev
+        - libjpeg-dev
+        - libpam0g-dev
+        - libpng-dev
+        - libusb-1.0-0-dev
+        - zlib1g-dev
+        - perl-base
+      stage-packages:
+        # We stage libavahi-client3 already in the "cups" part, to stage
+        # everything Avahi-related there, to avoid any file clashes.
+        #- libavahi-client3
+        - libpng16-16
+        - libusb-1.0-0
+      prime:
+        - -etc/fonts
+        - -var
+        - lib/*/lib*.so*
+        - usr/lib/lib*.so*
+        - usr/lib/*/lib*.so*
+        - -usr/include
+        - -usr/lib/pkgconfig
+        - -usr/share/fonts
+        - -usr/share/man
+        - -usr/share/doc
+        - -usr/share/doc-base
+        - -usr/share/lintian
+        - -snap
+      after: [cups]
+
+
+  libcupsfilters:
+    source: https://github.com/OpenPrinting/libcupsfilters
+    source-type: git
+    source-tag: '2.1.0'
+    source-depth: 1
+# ext:updatesnap
+#   version-format:
+#     lower-than: '3'
+#     no-9x-revisions: true
+    plugin: autotools
+    # We only need libcupsfilters itself. so we simply do not prime the
+    # auxiliary files (/usr/share)
+    autotools-configure-parameters:
+      - --prefix=/usr
+      - --disable-avahi
+      - --disable-mutool
+    build-packages:
+      - gettext
+      - autoconf
+      - automake
+      - autotools-dev
+      - pkg-config
+      - g++
+      - sharutils
+      - liblcms2-dev
+      - libpoppler-cpp-dev
+      - libpng-dev
+      - libjpeg-dev
+      - libtiff5-dev
+      - zlib1g-dev
+      - libfontconfig1-dev
+      - libdbus-1-dev
+      - libexif-dev
+    stage-packages:
+      - libpoppler-cpp0v5
+      - libjbig0
+      - liblcms2-2
+      - libnspr4
+      - libnss3
+      - libopenjp2-7
+      - libpoppler118
+      # We stage libtiff5 and libwebp7 here and do not stage them in the
+      # "gutenprint-printer-app" part to avoid any file clashes.
+      - libtiff5
+      - libwebp7
+      - libexif12
+    stage:
+      - -usr/lib/lib*.la
+      # The *.la file which gets installed by "make install" contains a
+      # wrong prefix, breaking parts of this Snap which use this library
+    prime:
+      - -etc
+      - -var
+      - -usr/include
+      - -usr/lib/pkgconfig
+       - usr/share/cups
+      - -usr/share/fonts
+      - -usr/share/man
+      - -usr/share/doc
+      - -usr/share/doc-base
+      - -usr/share/lintian
+      - lib/*/lib*.so*
+      - usr/lib/lib*.so*
+      - usr/lib/*/lib*.so*
+      - usr/lib/*/nss
+      # Reported unused by snapcraft linter
+      - -usr/lib/*/libssl3.*
+    after: [cups, qpdf, ghostscript]
+
+  libppd:
+    source: https://github.com/OpenPrinting/libppd
+    source-type: git
+    source-tag: '2.1.0'
+    source-depth: 1
+# ext:updatesnap
+#   version-format:
+#     lower-than: '3'
+#     no-9x-revisions: true
+    plugin: autotools
+    # We only need libppd itself
+    autotools-configure-parameters:
+      - --prefix=/usr
+      - --disable-mutool
+      - --disable-pdftocairo
+      - --disable-acroread
+      - --with-pdftops-path=/snap/gutenprint-printer-app/current/usr/bin/pdftops
+    # To find the libraries built in this Snap
+    build-environment:
+      - LD_LIBRARY_PATH: "${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$CRAFT_STAGE/usr/lib"
+    build-packages:
+      - gettext
+      - autoconf
+      - automake
+      - autotools-dev
+      - pkg-config
+      - g++
+      - sharutils
+      - poppler-utils
+    prime:
+      - -etc
+      - -var
+      - -usr/include
+      - -usr/lib/pkgconfig
+      - -usr/share/ppdc
+      - -usr/share/fonts
+      - -usr/share/man
+      - -usr/share/doc
+      - -usr/share/doc-base
+      - -usr/share/lintian
+      - lib/*/lib*.so*
+      - usr/lib/lib*.so*
+      - usr/lib/*/lib*.so*
+      - usr/lib/*/nss
+    after: [cups, ghostscript, libcupsfilters]
+
+  gutenprint:
+    # github source
+    # source: https://github.com/echiu64/gutenprint.git
+    source: https://salsa.debian.org/printing-team/gutenprint.git
+    source-type: git
+    source-tag: 'debian/5.3.4.20220624T01008808d602-3'
+    # github source tag
+    # source-tag: 'gutenprint-5_3_3'
+    source-depth: 1
+# ext:updatesnap
+#   version-format:
+#     format: 'debian/%V'
+#     lower-than: '6'
+#     no-9x-revisions: true
+    plugin: autotools
+    # We only need the library, the XML resources,  and the CUPS driver
+    # (PPD generator, filter, backend)
+    autotools-configure-parameters:
+      - --prefix=/usr
+      - --datarootdir=/snap/gutenprint-printer-app/current/usr/share
+      - --enable-shared
+      - --disable-rpath
+      - --with-modules=static
+      - --without-gimp2
+      - --disable-libgutenprintui2
+      - --with-cups
+      - --enable-cups-level3-ppds
+      - --enable-translated-cups-ppds
+      - --enable-simplified-cups-ppds
+      - --enable-cups-1_2-enhancements
+      - --disable-cups-ppds
+      - --enable-escputil
+      - --disable-samples
+      - --disable-test
+      - --disable-testpattern
+      - --enable-nls
+      - --without-doc
+    build-packages:
+      - byacc
+      - libreadline-dev
+      - libusb-1.0-0-dev
+      - zlib1g-dev
+      - flex
+      - gettext
+      - chrpath
+      - libtool-bin
+      - curl
+    organize:
+      snap/gutenprint-printer-app/current/usr/share: usr/share
+      usr/lib/cups/filter/rastertogutenprint.5.3: usr/lib/gutenprint-printer-app/filter/rastertogutenprint.5.3
+      usr/lib/cups/filter/commandtoepson: usr/lib/gutenprint-printer-app/filter/commandtoepson
+      usr/lib/cups/filter/commandtocanon: usr/lib/gutenprint-printer-app/filter/commandtocanon
+      usr/lib/cups/backend/gutenprint53+usb: usr/lib/gutenprint-printer-app/backend/gutenprint53+usb
+      usr/share/cups/usb/net.sf.gimp-print.usb-quirks: usr/lib/gutenprint-printer-app/backend/net.sf.gimp-print.usb-quirks
+      usr/lib/cups/driver/gutenprint.5.3: usr/share/ppd/gutenprint.5.3
+    prime:
+      - usr/bin/cups-calibrate
+      - usr/bin/escputil
+      - usr/sbin/*genppd*
+      - usr/lib/lib*.so*
+      - usr/lib/gutenprint-printer-app
+      - usr/share/ppd/gutenprint.5.3
+      - usr/share/gutenprint
+      - usr/share/locale
+      - usr/share/cups/calibrate.ppm
+      - -snap
+      - -etc/fonts
+      - -var
+      - -usr/include
+      - -share/man
+      - -share/doc
+      - -share/lintian
+      - -usr/share/fonts
+      - -usr/share/man
+      - -usr/share/doc
+      - -usr/share/doc-base
+      - -usr/share/lintian
+      - -usr/share/gutenprint/doc
+      - -usr/lib/gutenprint
+      - -usr/lib/libgutenprint.a
+      - -usr/lib/libgutenprint.la
+      - -usr/lib/pkgconfig
+      - -usr/lib/cups
+    after: [cups]
+
+
+  qpdf:
+    source: https://github.com/qpdf/qpdf/
+    source-type: git
+    source-tag: 'v11.9.1'
+    source-depth: 1
+# ext:updatesnap
+#   version-format:
+#     lower-than: '12'
+#     no-9x-revisions: true
+    plugin: cmake
+    cmake-parameters:
+      - -DCMAKE_INSTALL_PREFIX=/
+      - -DCMAKE_BUILD_RPATH_USE_ORIGIN=1
+      - -DUSE_IMPLICIT_CRYPTO=0
+      - -DREQUIRE_CRYPTO_GNUTLS=1
+      - -DSHOW_FAILED_TEST_OUTPUT=1
+      - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - -DQTEST_COLOR=0
+    build-packages:
+      - cmake
+      - g++
+      - libjpeg-dev
+      - zlib1g-dev
+      - libgnutls28-dev
+    stage-packages:
+      - libjpeg-turbo8
+    stage:
+      # The *.la file which gets installed by "make install" contains a
+      # wrong prefix, breaking parts of this Snap which use this library
+      - -usr/lib/lib*.la
+    prime:
+      - lib/*/lib*.so*
+      - usr/lib/lib*.so*
+      - usr/lib/*/lib*.so*
+      - -etc/fonts
+      - -var
+      - -usr/include
+      - -share/man
+      - -share/doc
+      - -share/lintian
+      - -usr/share/fonts
+      - -usr/share/man
+      - -usr/share/doc
+      - -usr/share/doc-base
+      - -usr/share/lintian
+      - -usr/lib/libqpdf.a
+      - -usr/lib/libqpdf.la
+      - -usr/lib/pkgconfig
+
+
+  gutenprint-printer-app:
+    plugin: make
+    source: .
+    make-parameters:
+      - LDFLAGS="$LDFLAGS -ljpeg"
+      - VERSION="$VERSION"
+    # To find the libraries built in this Snap
+    build-environment:
+      - LD_LIBRARY_PATH: "${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$CRAFT_STAGE/usr/lib"
+    # To improve convenience for developers (and everyone who wants to
+    # build from source), we do a "make clean" before "make" here,
+    # because if we had done "make" off-Snap, directly in the source
+    # tree. and afterwards build the Snap with snapcraft, the build
+    # sucks in our local binary of gutenprint-printer-app instead of
+    # compiling its own one in the Snap harness with the appropriate
+    # libraries, ending up with the Snap containing an executable
+    # which does not work inside the Snap. The "make clean" removes
+    # any accidentally grabbed binary.
+    #
+    # We need to directly call the "make" and "make install" commands
+    # here as we cannot inject an environment variable into the default
+    # build process ("craftctl default") and we also cannot call
+    # "craftctl get version" in the lines of "make-parameters:" or
+    # "build-environment:". This way we get the version number of our
+    # Snap (which is extracted from the Gutenprint upstream source)
+    # into the gutenprint-printer-app executable.
+    override-build: |
+      set -eux
+      make clean
+      VERSION="`craftctl get version`"
+      make -j"8" LDFLAGS="$LDFLAGS -ljpeg" VERSION="$VERSION"
+      make -j"8" install LDFLAGS="$LDFLAGS -ljpeg" VERSION="$VERSION" DESTDIR="$CRAFT_PART_INSTALL"
+      #craftctl default
+    build-packages:
+      - libusb-1.0-0-dev
+    stage-packages:
+      - libusb-1.0-0
+      - libjbig0
+      - liblcms2-2
+      # We stage libtiff5 and libwebp7 already in the "libcupsfilters" part, so
+      # we do not stage them here again, to avoid any file clashes.
+      #- libtiff5
+      #- libwebp7
+    stage:
+      - -usr/lib/gutenprint-printer-app
+    prime:
+      - usr/bin/gutenprint-printer-app
+      - lib/*/lib*.so*
+      - usr/lib/*/lib*.so*
+      - usr/share/gutenprint-printer-app
+      - -var
+      - -usr/share/man
+      # Reported unused by snapcraft linter
+      - -usr/lib/*/libgssapi.*
+    after: [pappl, libcupsfilters, libppd, gutenprint]
+
+  scripts:
+    plugin: dump
+    source: .
+    organize:
+      # Startup wrapper scripts
+      snap/local/run-gutenprint-printer-app*: scripts/
+    prime:
+      - scripts/
+    after: [gutenprint-printer-app]
+
 
     hooks:
         plugin: dump
