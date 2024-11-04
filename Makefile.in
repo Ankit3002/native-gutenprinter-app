@@ -1,5 +1,5 @@
 #
-# Makefile for LPrint, a Label Printer Application
+# Makefile for gutenprint-printer-app, a native Printer Application
 #
 # Copyright © 2019-2024 by Michael R Sweet
 #
@@ -12,7 +12,7 @@
 
 
 # Version number...
-LPRINT_VERSION	=	@LPRINT_VERSION@
+GUTENPRINT_PRINTER_APP_VERSION	=	@GUTENPRINT_PRINTER_APP_VERSION@
 
 
 # Languages we have localized messages for...
@@ -98,7 +98,7 @@ TARGETS		=	\
 
 
 TESTOBJS	=	\
-			lprint-common.o \
+			gutenprint-printer-app-common.o \
 			testdither.o
 TESTTARGETS	=	\
 			testdither
@@ -122,7 +122,7 @@ distclean:	clean
 
 # Install everything...
 install:	all
-	echo "Installing lprint to $(BUILDROOT)$(bindir)..."
+	echo "Installing gutenprint-printer-app to $(BUILDROOT)$(bindir)..."
 	$(INSTALL) -d -m 755 $(BUILDROOT)$(bindir)
 	$(INSTALL) -c -m 755 lprint $(BUILDROOT)$(bindir)
 	echo "Installing man pages to $(BUILDROOT)$(mandir)..."
@@ -141,7 +141,7 @@ install:	all
 	elif test "x$(unitdir)" != x; then \
 	    echo "Installing systemd service to $(BUILDROOT)$(unitdir)..."; \
 	    $(INSTALL) -d -m 755 $(BUILDROOT)$(unitdir); \
-	    $(INSTALL) -c -m 644 lprint.service $(BUILDROOT)$(unitdir); \
+	    $(INSTALL) -c -m 644 gutenprint-printer-app.service $(BUILDROOT)$(unitdir); \
 	fi
 
 
@@ -205,22 +205,22 @@ lprint.o:	\
 # variables from the Apple developer pages.
 macos:
 	echo "Creating archive for notarization..."
-	rm -f lprint.zip
-	zip -v9 lprint.zip lprint
+	rm -f gutenprint-printer-app.zip
+	zip -v9 gutenprint-printer-app.zip gutenprint-printer-app
 	echo Notarizing application
-	xcrun notarytool submit lprint.zip \
+	xcrun notarytool submit gutenprint-printer-app.zip \
 	    --apple-id "$${APPLEID}" \
 	    --keychain-profile "AC_$${TEAMID}" \
 	    --team-id "$${TEAMID}" \
 	    --wait
-	rm -f lprint.zip
+	rm -f gutenprint-printer-app.zip
 	echo "Creating the macOS package..."
-	rm -rf /private/tmp/lprint-$(LPRINT_VERSION)
-	make BUILDROOT="/private/tmp/lprint-$(LPRINT_VERSION)" install
-	pkgbuild --root /private/tmp/lprint-$(LPRINT_VERSION) \
+	rm -rf /private/tmp/gutenprint-printer-app-$(GUTENPRINT_PRINTER_APP_VERSION)
+	make BUILDROOT="/private/tmp/gutenprint-printer-app-$(LPRINT_VERSION)" install
+	pkgbuild --root /private/tmp/gutenprint-printer-app-$(GUTENPRINT_PRINTER_APP_VERSION) \
 	    --identifier org.msweet.lprint \
-	    --version $(LPRINT_VERSION) \
+	    --version $(GUTENPRINT_PRINTER_APP_VERSION) \
 	    --scripts macos-scripts \
 	    --min-os-version 11.0 \
 	    --sign "$${PKGSIGN_IDENTITY}" --timestamp \
-	    lprint-$(LPRINT_VERSION)-macos.pkg
+	    gutenprint-printer-app-$(GUTENPRINT_PRINTER_APP_VERSION)-macos.pkg
