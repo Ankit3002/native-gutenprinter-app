@@ -1871,7 +1871,12 @@ driver_cb(
       stp_parameter_description_destroy(&desc);
 
    }
-
+  
+   char ** spooling_conversions;
+   spooling_conversions = calloc(2 , sizeof(char *));
+   spooling_conversions[0] = "image/pwg-raster";
+   spooling_conversions[1] = "image/urf";
+   ippAddStrings(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_KEYWORD, "job-spooling-supported",num_opts, NULL, (const char *const *)spooling_conversions);
 
     // // printing all the vendors over here...
     // for(int sl = 0; sl< driver_data->num_vendor; sl++)
