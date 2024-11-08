@@ -188,6 +188,7 @@ resheaders:
 $(OBJS) $(TESTOBJS):	config.h Makefile
 lprint.o:	\
 		i18n.h \
+		gutenprint-printer-app.h \
 		static-resources/lprint-css.h \
 		static-resources/lprint-png.h \
 		static-resources/lprint-large-png.h \

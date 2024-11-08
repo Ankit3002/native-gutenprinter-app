@@ -1,5 +1,3 @@
-// #include <gutenprint/gutenprint.h>
-// #include <gutenprint/util.h>
 #include <cups/raster.h>
 #include <cups/ipp.h>
 #include <cups/http.h>
@@ -23,9 +21,12 @@
 #include <gutenprint/gutenprint-module.h>
 #include <pappl/pappl.h>
 #include <sys/times.h>
+#include "gutenprint-printer-app.h"
 #include "i18n.h"
 #define cups_page_header2_t cups_page_header_t
 #include <ppd/ppd.h>
+#include <pwd.h>
+#include <magic.h>
 
 /* Solaris with gcc has problems because gcc's limits.h doesn't #define */
 /* this */
@@ -33,6 +34,11 @@
 #define CHAR_BIT 8
 #endif
 
+
+static char gutenprint_printer_app_statefile[1024];
+static pappl_system_t *system_cb(int num_options, cups_option_t *options, void *data);
+static const char *mime_cb(const unsigned char *header, size_t headersize, void *data);
+#define gutenprint_TESTPAGE_MIMETYPE "application/vnd.cups-raster"
 
 // extern const char *ppdext;
 // extern const char *cups_modeldir;
@@ -285,15 +291,17 @@
 
 // }
 
+pappl_pr_driver_t *guten_print_drivers;
+static int stp_printer_count;
 static bool driver_cb(pappl_system_t *sytem, const char *driver_name,
                       const char *device_uri, const char *device_id,
                       pappl_pr_driver_data_t *data, ipp_t **attrs, void *cbdata);
 
 
 
+// gutenprint--> raster ---> .. 
 
-
-int main(int argc, char *argv[])
+int main(int argc, char *argv[]) 
 {
    stp_init();
    // stp_printer_t * printer;
@@ -305,12 +313,35 @@ int main(int argc, char *argv[])
    // below is the logic to print the models ...
 
    int verbose = 0;
+  cups_array_t *spooling_conversions,
+               *stream_formats;
 
-   int count_of_printer = 0;
-   count_of_printer = stp_printer_model_count();
+  spooling_conversions = cupsArrayNew(NULL, NULL,NULL,NULL,NULL, NULL);
+  cupsArrayAdd(spooling_conversions, (void *)&CONVERT_PDF_TO_RASTER);
+  cupsArrayAdd(spooling_conversions, (void *)&CONVERT_PS_TO_RASTER);
+
+  // Array of stream formats, most desirables first
+  //
+  // PDF comes last because it is generally not streamable.
+  // PostScript comes second as it is Ghostscript's streamable
+  // input format.
+  stream_formats = cupsArrayNew(NULL, NULL,NULL,NULL, NULL, NULL);
+  cupsArrayAdd(stream_formats, (void *)&PR_STREAM_CUPS_RASTER);
+ 
+  gutenprint_printer_app_config_t printer_app_config = {
+      .spooling_conversions = spooling_conversions};
+
+  gutenprint_printer_app_global_data_t global_data;
+
+  memset(&global_data, 0, sizeof(global_data));
+
+  global_data.config = &printer_app_config;
+
+
+   stp_printer_count = stp_printer_model_count();
 
    // pappl_pr_driver_t guten_print_drivers[count_of_printer];
-   pappl_pr_driver_t *guten_print_drivers = (pappl_pr_driver_t *)malloc(count_of_printer * sizeof(pappl_pr_driver_t));
+   guten_print_drivers = (pappl_pr_driver_t *)malloc(stp_printer_count * sizeof(pappl_pr_driver_t));
    int null_count = 0;
    for (i = 0; i < stp_printer_model_count(); i++)
    {
@@ -325,8 +356,8 @@ int main(int argc, char *argv[])
    }
 
    return  papplMainloop(argc, argv, VERSION, "Copyright &copy Ankit Pal Singh",
-        count_of_printer,
-        guten_print_drivers, NULL, driver_cb, NULL, NULL, NULL, NULL, NULL);
+        stp_printer_count,
+        guten_print_drivers, NULL, driver_cb, NULL, NULL, system_cb, NULL, NULL);
 }
 
 // creating the driver callback over here..
@@ -1872,11 +1903,11 @@ driver_cb(
 
    }
   
-   char ** spooling_conversions;
-   spooling_conversions = calloc(2 , sizeof(char *));
-   spooling_conversions[0] = "image/pwg-raster";
-   spooling_conversions[1] = "image/urf";
-   ippAddStrings(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_KEYWORD, "job-spooling-supported",num_opts, NULL, (const char *const *)spooling_conversions);
+  //  char ** spooling_conversions;
+  //  spooling_conversions = calloc(2 , sizeof(char *));
+  //  spooling_conversions[0] = "image/pwg-raster";
+  //  spooling_conversions[1] = "image/urf";
+  //  ippAddStrings(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_KEYWORD, "job-spooling-supported",num_opts, NULL, (const char *const *)spooling_conversions);
 
     // // printing all the vendors over here...
     // for(int sl = 0; sl< driver_data->num_vendor; sl++)
@@ -2082,6 +2113,170 @@ driver_cb(
 
 
 }
+
+// 'mime_cb()' - MIME typing callback...
+
+static const char *                  // O - MIME media type or `NULL` if none
+mime_cb(const unsigned char *header, // I - Header data
+        size_t headersize,           // I - Size of header data
+        void *cbdata)                // I - Callback data (not used)
+{
+  magic_t magic;
+  const char *mime_type = NULL;
+
+  // Step 1: Open a magic_t object for MIME type detection
+  magic = magic_open(MAGIC_MIME_TYPE);
+  if (magic == NULL)
+  {
+    fprintf(stderr, "Failed to initialize libmagic.\n");
+    return NULL;
+  }
+
+  // Step 2: Load the magic database
+  if (magic_load(magic, NULL) != 0)
+  {
+    fprintf(stderr, "Failed to load magic database: %s\n", magic_error(magic));
+    magic_close(magic);
+    return NULL;
+  }
+
+  // Step 3: Use magic_buffer to determine MIME type from the header data
+  mime_type = magic_buffer(magic, header, headersize);
+  if (mime_type == NULL)
+  {
+    fprintf(stderr, "Failed to determine MIME type: %s\n", magic_error(magic));
+  }
+  else
+  {
+    // Duplicate the MIME type string, as magic_buffer may free it after magic_close
+    mime_type = strdup(mime_type);
+  }
+
+  // Step 4: Clean up
+  magic_close(magic);
+
+  return mime_type; // Return the MIME type (or NULL if undetected)
+}
+
+
+
+
+// 'system_cb()' - Setup the system object.
+
+static pappl_system_t * // O - System object
+system_cb(
+    int num_options,        // I - Number options
+    cups_option_t *options, // I - Options
+    void *data)             // I - Callback data (unused)
+{
+
+  gutenprint_printer_app_global_data_t *global_data = (gutenprint_printer_app_global_data_t *)data;
+  pappl_system_t *system;    // System object
+  const char *val,           // Current option value
+      *hostname,             // Hostname, if any
+      *logfile,              // Log file, if any
+      *system_name;          // System name, if any
+  pappl_loglevel_t loglevel; // Log level
+  int port = 0;              // Port number, if any
+  pappl_soptions_t soptions = PAPPL_SOPTIONS_MULTI_QUEUE | PAPPL_SOPTIONS_WEB_INTERFACE | PAPPL_SOPTIONS_WEB_LOG | PAPPL_SOPTIONS_WEB_SECURITY;
+  // System options
+  // static pappl_version_t versions[1] = // Software versions
+  //     {
+  //         {"brf", "", 1.0, 1.0}};
+
+  // Parse standard log and server options...
+  if ((val = cupsGetOption("log-level", num_options, options)) != NULL)
+  {
+    if (!strcmp(val, "fatal"))
+      loglevel = PAPPL_LOGLEVEL_FATAL;
+    else if (!strcmp(val, "error"))
+      loglevel = PAPPL_LOGLEVEL_ERROR;
+    else if (!strcmp(val, "warn"))
+      loglevel = PAPPL_LOGLEVEL_WARN;
+    else if (!strcmp(val, "info"))
+      loglevel = PAPPL_LOGLEVEL_INFO;
+    else if (!strcmp(val, "debug"))
+      loglevel = PAPPL_LOGLEVEL_DEBUG;
+    else
+    {
+      fprintf(stderr, "gutenprint: Bad log-level value '%s'.\n", val);
+      return (NULL);
+    }
+  }
+  else
+    loglevel = PAPPL_LOGLEVEL_UNSPEC;
+
+  logfile = cupsGetOption("log-file", num_options, options);
+  hostname = cupsGetOption("server-hostname", num_options, options);
+  system_name = cupsGetOption("system-name", num_options, options);
+
+  if ((val = cupsGetOption("server-port", num_options, options)) != NULL)
+  {
+    if (!isdigit(*val & 255))
+    {
+      fprintf(stderr, "gutenprint-printer-app: Bad server-port value '%s'.\n", val);
+      return (NULL);
+    }
+    else
+      port = atoi(val);
+  }
+
+  // State file...
+  if ((val = getenv("SNAP_DATA")) != NULL)
+  {
+    snprintf(gutenprint_printer_app_statefile, sizeof(gutenprint_printer_app_statefile), "%s/gutenprint.conf", val);
+  }
+  else if ((val = getenv("XDG_DATA_HOME")) != NULL)
+  {
+    snprintf(gutenprint_printer_app_statefile, sizeof(gutenprint_printer_app_statefile), "%s/.gutenprint.conf", val);
+  }
+#ifdef _WIN32
+  else if ((val = getenv("USERPROFILE")) != NULL)
+  {
+    snprintf(gutenprint_printer_app_statefile, sizeof(gutenprint_printer_app_statefile), "%s/AppData/Local/gutenprint.conf", val);
+  }
+  else
+  {
+    papplCopyString(gutenprint_printer_app_statefile, "/gutenprint.ini", sizeof(gutenprint_printer_app_statefile));
+  }
+#else
+  else if ((val = getenv("HOME")) != NULL)
+  {
+    snprintf(gutenprint_printer_app_statefile, sizeof(gutenprint_printer_app_statefile), "%s/.gutenprint.conf", val);
+  }
+  else
+  {
+    papplCopyString(gutenprint_printer_app_statefile, "/etc/gutenprint.conf", sizeof(gutenprint_printer_app_statefile));
+  }
+#endif // _WIN32
+
+  // Create the system object...
+  if ((system = papplSystemCreate(soptions, system_name ? system_name : "gutenprint printer app", port, "_print,_universal", cupsGetOption("spool-directory", num_options, options), logfile ? logfile : "-", loglevel, cupsGetOption("auth-service", num_options, options), /* tls_only */ false)) == NULL)
+    return (NULL);
+
+  papplSystemAddListeners(system, NULL);
+  papplSystemSetHostName(system, hostname);
+  // initialize_spooling_conversions();
+
+  // papplSystemSetMIMECallback(system, mime_cb, NULL);
+
+
+  papplSystemSetPrinterDrivers(system, stp_printer_count, guten_print_drivers, NULL, /*create_cb*/ NULL, driver_cb, system);
+
+  papplSystemSetFooterHTML(system, "Copyright &copy; 2024 by Ankit Pal Singh. All rights reserved.");
+
+  papplSystemSetSaveCallback(system, (pappl_save_cb_t)papplSystemSaveState, (void *)gutenprint_printer_app_statefile);
+
+  // papplSystemSetVersions(system, (int)(sizeof(versions) / sizeof(versions[0])), versions);
+
+  fprintf(stderr, "gutenprint: statefile='%s'\n", gutenprint_printer_app_statefile);
+
+
+  return (system);
+}
+
+
+
 
 // // //$ gcc -c stpimage.c
 // // //$ gcc -o stpimage -lgutenprint stpimage.o

@@ -17,3 +17,4 @@
 
 // Enable experimental drivers?
 #define GUTENPRINT_PRINTER_APP_EXPERIMENTAL 0
+#define CUPS_DATADIR "@CUPS_DATADIR@"

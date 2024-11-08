@@ -141,36 +141,36 @@ configure:3631: result: using /home/ank/Documents/native-gutenprinter-app/instal
 configure:3686: checking for pkg-config
 configure:3709: found /usr/bin/pkg-config
 configure:3721: result: /usr/bin/pkg-config
-configure:3821: checking for cups-config
-configure:3844: found /usr/bin/cups-config
-configure:3856: result: /usr/bin/cups-config
-configure:3878: checking for CUPS library v2.4 or higher
-configure:3894: result: yes, v2.4.7
-configure:4042: checking whether compiler supports -Wno-char-subscripts
-configure:4059: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include  -I/usr/include/p11-kit-1 -D_REENTRANT  -Wno-char-subscripts -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
-configure:4059: $? = 0
-configure:4062: result: yes
-configure:4042: checking whether compiler supports -Wno-format-truncation
-configure:4059: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include  -I/usr/include/p11-kit-1 -D_REENTRANT  -Wno-format-truncation -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
-configure:4059: $? = 0
-configure:4062: result: yes
-configure:4042: checking whether compiler supports -Wno-format-y2k
-configure:4059: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include  -I/usr/include/p11-kit-1 -D_REENTRANT  -Wno-format-y2k -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
-configure:4059: $? = 0
-configure:4062: result: yes
-configure:4042: checking whether compiler supports -Wno-switch
-configure:4059: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include  -I/usr/include/p11-kit-1 -D_REENTRANT  -Wno-switch -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
-configure:4059: $? = 0
-configure:4062: result: yes
-configure:4042: checking whether compiler supports -Wno-unused-result
-configure:4059: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include  -I/usr/include/p11-kit-1 -D_REENTRANT  -Wno-unused-result -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
-configure:4059: $? = 0
-configure:4062: result: yes
-configure:4084: checking whether compiler supports -fPIE
-configure:4132: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include  -I/usr/include/p11-kit-1 -D_REENTRANT  -fPIC -fPIE -pie  -D_FORTIFY_SOURCE=2 conftest.c >&5
-configure:4132: $? = 0
-configure:4137: result: yes
-configure:4298: creating ./config.status
+configure:3851: checking for cups-config
+configure:3874: found /usr/bin/cups-config
+configure:3886: result: /usr/bin/cups-config
+configure:3908: checking for CUPS library v2.4 or higher
+configure:3924: result: yes, v2.4.7
+configure:4072: checking whether compiler supports -Wno-char-subscripts
+configure:4089: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include   -I/usr/include/cupsfilters  -I/usr/include/p11-kit-1 -D_REENTRANT  -Wno-char-subscripts -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
+configure:4089: $? = 0
+configure:4092: result: yes
+configure:4072: checking whether compiler supports -Wno-format-truncation
+configure:4089: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include   -I/usr/include/cupsfilters  -I/usr/include/p11-kit-1 -D_REENTRANT  -Wno-format-truncation -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
+configure:4089: $? = 0
+configure:4092: result: yes
+configure:4072: checking whether compiler supports -Wno-format-y2k
+configure:4089: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include   -I/usr/include/cupsfilters  -I/usr/include/p11-kit-1 -D_REENTRANT  -Wno-format-y2k -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
+configure:4089: $? = 0
+configure:4092: result: yes
+configure:4072: checking whether compiler supports -Wno-switch
+configure:4089: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include   -I/usr/include/cupsfilters  -I/usr/include/p11-kit-1 -D_REENTRANT  -Wno-switch -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
+configure:4089: $? = 0
+configure:4092: result: yes
+configure:4072: checking whether compiler supports -Wno-unused-result
+configure:4089: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include   -I/usr/include/cupsfilters  -I/usr/include/p11-kit-1 -D_REENTRANT  -Wno-unused-result -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
+configure:4089: $? = 0
+configure:4092: result: yes
+configure:4114: checking whether compiler supports -fPIE
+configure:4162: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include   -I/usr/include/cupsfilters  -I/usr/include/p11-kit-1 -D_REENTRANT  -fPIC -fPIE -pie  -D_FORTIFY_SOURCE=2 conftest.c >&5
+configure:4162: $? = 0
+configure:4167: result: yes
+configure:4328: creating ./config.status
 
 ## ---------------------- ##
 ## Running config.status. ##
@@ -234,7 +234,7 @@ ac_cv_prog_cc_stdc=
 AR='/usr/bin/ar'
 ARFLAGS='cr'
 CC='gcc'
-CFLAGS='-fPIC  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include  -I/usr/include/p11-kit-1 -D_REENTRANT '
+CFLAGS='-fPIC  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include   -I/usr/include/cupsfilters  -I/usr/include/p11-kit-1 -D_REENTRANT '
 CPPFLAGS=' -D_FORTIFY_SOURCE=2 -D__USE_MISC -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64'
 CSFLAGS='-o runtime'
 CUPSCONFIG='/usr/bin/cups-config'
@@ -247,7 +247,7 @@ GUTENPRINT_PRINTER_APP_VERSION='1.0'
 INSTALL='/home/ank/Documents/native-gutenprinter-app/install-sh'
 LDFLAGS='-fPIE -pie '
 LIBOBJS=''
-LIBS=' -L/usr/local/lib -lpappl -lcups3  -L/usr/local/lib -lgutenprint  -lcups '
+LIBS=' -L/usr/local/lib -lpappl -lcups3  -L/usr/local/lib -lgutenprint  -lmagic  -lcupsfilters  -lcups '
 LTLIBOBJS=''
 MKDIR='/usr/bin/mkdir'
 OBJEXT='o'

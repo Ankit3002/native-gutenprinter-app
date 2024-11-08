@@ -261,6 +261,9 @@ AS_IF([test -n "$GCC"], [
     ])
 ])
 
+AC_SUBST(cups_conf_datadir)
+dnl Definitions
+AC_DEFINE_UNQUOTED(CUPS_DATADIR, "${cups_conf_datadir}", [CUPS data directory.])
 
 dnl Extra linker options...
 AC_ARG_WITH(ldflags, AS_HELP_STRING([--with-ldflags=...], [Specify additional LDFLAGS]), [
