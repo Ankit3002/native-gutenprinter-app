@@ -24,12 +24,12 @@ AR		=	/usr/bin/ar
 ARFLAGS		=	cr
 ASAN_OPTIONS	=	leak_check_at_exit=false
 CC		=	gcc
-CFLAGS		=	-I.. -fPIC  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include   -I/usr/include/cupsfilters  -I/usr/include/p11-kit-1 -D_REENTRANT  $(CPPFLAGS) $(OPTIM) $(WARNINGS)
+CFLAGS		=	-I.. -fPIC  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0   -I/usr/include/cupsfilters  -I/usr/include/ppd  -I/usr/include/p11-kit-1 -D_REENTRANT  -I/usr/local/include  $(CPPFLAGS) $(OPTIM) $(WARNINGS)
 CPPFLAGS	=	 -D_FORTIFY_SOURCE=2 -D__USE_MISC -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64
 CSFLAGS		=	-s "$${CODESIGN_IDENTITY:=-}" --timestamp -o runtime
 INSTALL		=	/home/ank/Documents/native-gutenprinter-app/install-sh
 LDFLAGS		=	-fPIE -pie  $(OPTIM)
-LIBS		=	 -L/usr/local/lib -lpappl -lcups3  -L/usr/local/lib -lgutenprint  -lmagic  -lcupsfilters  -lcups  -lm
+LIBS		=	 -L/usr/local/lib -lpappl -lcups3  -lmagic  -lcupsfilters  -lppd  -lcups  -L/usr/local/lib -lgutenprint  -lm
 MKDIR		=	/usr/bin/mkdir -p
 OPTIM		=	-g -Os
 RANLIB		=	ranlib

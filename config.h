@@ -17,4 +17,10 @@
 
 // Enable experimental drivers?
 #define GUTENPRINT_PRINTER_APP_EXPERIMENTAL 0
-#define CUPS_DATADIR "@CUPS_DATADIR@"
+#define GUTENPRINT_RELEASE_VERSION "5.3"
+#define CUPS_MODELDIR "/usr/share/cups/model/gutenprint/5.3"
+
+#ifndef __cplusplus
+/* #undef inline */
+#endif
+#define CUPS_PPD_NICKNAME_STRING " - CUPS+Gutenprint v"

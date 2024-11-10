@@ -27,6 +27,9 @@
 #include <ppd/ppd.h>
 #include <pwd.h>
 #include <magic.h>
+#include "config.h"
+
+#define gutenprint_TESTPAGE_MIMETYPE "application/vnd.cups-raster"
 
 /* Solaris with gcc has problems because gcc's limits.h doesn't #define */
 /* this */
@@ -38,258 +41,8 @@
 static char gutenprint_printer_app_statefile[1024];
 static pappl_system_t *system_cb(int num_options, cups_option_t *options, void *data);
 static const char *mime_cb(const unsigned char *header, size_t headersize, void *data);
-#define gutenprint_TESTPAGE_MIMETYPE "application/vnd.cups-raster"
 
-// extern const char *ppdext;
-// extern const char *cups_modeldir;
-// extern const char *gpext;
-// extern int cups_ppd_ps_level;
-// extern int localize_numbers;
-// extern int use_base_version;
-// #define VERSION "5.3.4-2023-12-06T01-00-2ef8ba24"
-/* config.h.  Generated from config.h.in by configure.  */
-/* config.h.in.  Generated from configure.ac by autoheader.  */
 
-// Code for the header file definitions over here...
-/* config.h.  Generated from config.h.in by configure.  */
-/* config.h.in.  Generated from configure.ac by autoheader.  */
-
-/* CUPS data directory. */
-#define CUPS_DATADIR "/usr/share/cups"
-
-/* */
-#define CUPS_MODELDIR "/usr/share/cups/model/gutenprint/5.3/"
-
-/* */
-#define CUPS_PPD_NICKNAME_STRING " - CUPS+Gutenprint v"
-
-/* CUPS PPD PostScript level */
-#define CUPS_PPD_PS_LEVEL 3
-
-/* Define to 1 if translation of program messages to the user's native
-   language is requested. */
-#define ENABLE_NLS 1
-
-/* Shared libraries are built. */
-#define ENABLE_SHARED "yes"
-
-/* Static libraries are built. */
-#define ENABLE_STATIC "yes"
-
-/* */
-#define GUTENPRINT_BASE_VERSION "5.3.4"
-
-/* */
-#define GUTENPRINT_RELEASE_VERSION "5.3"
-
-/* Define to 1 if you have the MacOS X function CFLocaleCopyCurrent in the
-   CoreFoundation framework. */
-/* #undef HAVE_CFLOCALECOPYCURRENT */
-
-/* Define to 1 if you have the MacOS X function CFPreferencesCopyAppValue in
-   the CoreFoundation framework. */
-/* #undef HAVE_CFPREFERENCESCOPYAPPVALUE */
-
-/* Define if the GNU dcgettext() function is already present or preinstalled.
- */
-#define HAVE_DCGETTEXT 1
-
-/* Define to 1 if you have the <dlfcn.h> header file. */
-#define HAVE_DLFCN_H 1
-
-/* Define to 1 if you have the <fcntl.h> header file. */
-#define HAVE_FCNTL_H 1
-
-/* Define to 1 if GCC special attributes are supported */
-#define HAVE_GCC_ATTRIBUTES 1
-
-#if !defined(HAVE_GCC_ATTRIBUTES) && !defined(__attribute__)
-/* This should really be a C99 anonymous variadic macro. */
-#define __attribute__(attr)
-#endif
-
-/* Define to 1 if you have the <getopt.h> header file. */
-#define HAVE_GETOPT_H 1
-
-/* Define to 1 if you have the `getopt_long' function. */
-#define HAVE_GETOPT_LONG 1
-
-/* Define if the GNU gettext() function is already present or preinstalled. */
-#define HAVE_GETTEXT 1
-
-/* Define to 1 if you have the `getuid' function. */
-#define HAVE_GETUID 1
-
-/* Define if GNU ld is present. */
-/* #undef HAVE_GNU_LD */
-
-/* Define if you have the iconv() function. */
-#define HAVE_ICONV 1
-
-/* Define to 1 if you have the <inttypes.h> header file. */
-#define HAVE_INTTYPES_H 1
-
-/* Is libreadline present? */
-#define HAVE_LIBREADLINE 0
-
-/* Define if libz is present. */
-#define HAVE_LIBZ /**/
-
-/* Define to 1 if you have the <limits.h> header file. */
-#define HAVE_LIMITS_H 1
-
-/* Define to 1 if you have the <locale.h> header file. */
-#define HAVE_LOCALE_H 1
-
-/* Define to 1 if you have the <ltdl.h> header file. */
-#define HAVE_LTDL_H 1
-
-/* Define if maintainer-mode is to be used. */
-/* #undef HAVE_MAINTAINER_MODE */
-
-/* Define to 1 if you have the `nanosleep' function. */
-#define HAVE_NANOSLEEP 1
-
-/* Define to 1 if you have the `poll' function. */
-#define HAVE_POLL 1
-
-/* Define if libreadline header is present. */
-/* #undef HAVE_READLINE_READLINE_H */
-
-/* Define to 1 if you have the `setenv' function. */
-#define HAVE_SETENV 1
-
-/* Define to 1 if you have the <stdarg.h> header file. */
-#define HAVE_STDARG_H 1
-
-/* Define to 1 if you have the <stdint.h> header file. */
-#define HAVE_STDINT_H 1
-
-/* Define to 1 if you have the <stdio.h> header file. */
-#define HAVE_STDIO_H 1
-
-/* Define to 1 if you have the <stdlib.h> header file. */
-#define HAVE_STDLIB_H 1
-
-/* Define to 1 if you have the <strings.h> header file. */
-#define HAVE_STRINGS_H 1
-
-/* Define to 1 if you have the <string.h> header file. */
-#define HAVE_STRING_H 1
-
-/* Define to 1 if you have the <sys/stat.h> header file. */
-#define HAVE_SYS_STAT_H 1
-
-/* Define to 1 if you have the <sys/time.h> header file. */
-#define HAVE_SYS_TIME_H 1
-
-/* Define to 1 if you have the <sys/types.h> header file. */
-#define HAVE_SYS_TYPES_H 1
-
-/* Define to 1 if you have the <time.h> header file. */
-#define HAVE_TIME_H 1
-
-/* Define to 1 if you have the <unistd.h> header file. */
-#define HAVE_UNISTD_H 1
-
-/* Define to 1 if you have the `usleep' function. */
-#define HAVE_USLEEP 1
-
-/* Define to 1 if you have the `waitpid' function. */
-#define HAVE_WAITPID 1
-
-/* Define to the sub-directory where libtool stores uninstalled libraries. */
-#define LT_OBJDIR ".libs/"
-
-/* Printers to test in minimal run */
-#define MINIMAL_PRINTERS_TO_TEST escp2 - r1800 escp2 - 3880 pcl - g_4 pcl - g_5c pcl - 500 mitsubishi - p95d shinko - chcs2145 kodak - 1400 canon - cp910 mitsubishi - 9800d bjc - s200 bjc - PIXMA - Pro9000mk2 datamax_oneil_I4212e lexmark - z43
-
-/* Build a modular libgutenprint */
-/* #undef MODULE */
-
-/* The operating system to build for */
-#define OSTYPE "linux"
-
-/* Name of package */
-#define PACKAGE "gutenprint"
-
-/* */
-#define PACKAGE_BIN_DIR "/usr/local/bin"
-
-/* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "gimp-print-devel@lists.sourceforge.net"
-
-/* */
-#define PACKAGE_DATA_DIR "/usr/local/share/gutenprint"
-
-/* */
-#define PACKAGE_LIB_DIR "/usr/local/lib/gutenprint"
-
-/* */
-#define PACKAGE_LOCALE_DIR "/usr/local/share/locale"
-
-/* Define to the full name of this package. */
-#define PACKAGE_NAME "gutenprint"
-
-/* Define to the full name and version of this package. */
-#define PACKAGE_STRING "gutenprint 5.3.4-2023-12-06T01-00-2ef8ba24"
-
-/* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "gutenprint"
-
-/* Define to the home page for this package. */
-#define PACKAGE_URL "https://gimp-print.sourceforge.net"
-
-/* Define to the version of this package. */
-#define PACKAGE_VERSION "5.3.4-2023-12-06T01-00-2ef8ba24"
-
-/* */
-#define PKGMODULEDIR "/usr/local/lib/gutenprint/5.3/modules"
-
-/* */
-#define PKGXMLDATADIR "/usr/local/share/gutenprint/5.3/xml"
-
-/* Package release date. */
-#define RELEASE_DATE "06 Dec 2023"
-
-/* Define to 1 if all of the C90 standard headers exist (not just the ones
-   required in a freestanding environment). This macro is provided for
-   backward compatibility; new code need not use it. */
-#define STDC_HEADERS 1
-
-/* Use libdl/dlopen as module loader */
-#define USE_DLOPEN "1"
-
-/* Use GNU libltdl as module loader */
-/* #undef USE_LTDL */
-
-/* Version number of package */
-#define VERSION "5.3.4-2023-12-06T01-00-2ef8ba24"
-
-/* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
-   `char[]'. */
-/* #undef YYTEXT_POINTER */
-
-/* Define to empty if `const' does not conform to ANSI C. */
-/* #undef const */
-
-/* Define to `__inline__' or `__inline' if that's what the C compiler
-   calls it, or to nothing if 'inline' is not supported under any name.  */
-#ifndef __cplusplus
-/* #undef inline */
-#endif
-
-/* Define to `long int' if <sys/types.h> does not define. */
-/* #undef off_t */
-
-/* Define to `unsigned int' if <sys/types.h> does not define. */
-/* #undef size_t */
-
-// pappl_pr_driver_t *guten_print_drivers;
-// static funct()
-// {
-
-// }
 
 pappl_pr_driver_t *guten_print_drivers;
 static int stp_printer_count;
@@ -318,7 +71,7 @@ int main(int argc, char *argv[])
 
   spooling_conversions = cupsArrayNew(NULL, NULL,NULL,NULL,NULL, NULL);
   cupsArrayAdd(spooling_conversions, (void *)&CONVERT_PDF_TO_RASTER);
-  cupsArrayAdd(spooling_conversions, (void *)&CONVERT_PS_TO_RASTER);
+  // cupsArrayAdd(spooling_conversions, (void *)&CONVERT_PS_TO_RASTER);
 
   // Array of stream formats, most desirables first
   //
@@ -355,7 +108,7 @@ int main(int argc, char *argv[])
       }
    }
 
-   return  papplMainloop(argc, argv, VERSION, "Copyright &copy Ankit Pal Singh",
+   return  papplMainloop(argc, argv, GUTENPRINT_PRINTER_APP_VERSION, "Copyright &copy Ankit Pal Singh",
         stp_printer_count,
         guten_print_drivers, NULL, driver_cb, NULL, NULL, system_cb, NULL, NULL);
 }
@@ -1650,13 +1403,6 @@ bool rwriteline(
 
   size_t pixels_size =  sizeof(pixels)/sizeof(pixels[0]);
   
-  // // Safety check - DO NOT modify pixel data
-  // if (pixels_size != bytes_per_line) {
-  //     // If sizes don't match, this would distort the image
-  //     free(buffer);
-  //     return 0;
-  // }
-  
   // Simple copy - no modification to pixels
   memcpy(buffer + current_pos, pixels, bytes_per_line);
   current_pos += bytes_per_line;
@@ -1719,15 +1465,7 @@ gutenprint_rend_job(
             fflush(stdout);
             stp_vars_destroy(vars);
     }
-  // (void) times(&tms);
-  // (void) gettimeofday(&t2, NULL);
-  // clocks_per_sec = sysconf(_SC_CLK_TCK);
-  // fprintf(stderr, "DEBUG: Gutenprint: stats %.0fB, %.3fu, %.3fs, %.3fel\n",
-	//   total_bytes_printed,
-	//   (double) tms.tms_utime / clocks_per_sec,
-	//   (double) tms.tms_stime / clocks_per_sec,
-	//   (double) (t2.tv_sec - t1.tv_sec) +
-	//   ((double) (t2.tv_usec - t1.tv_usec)) / 1000000.0);
+
   if (!suppress_messages)
   {
     fprintf(stderr, "DEBUG: Gutenprint: ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
@@ -1769,19 +1507,6 @@ driver_cb(
    stp_vars_t *v;
    const stp_vars_t *printvars;
    printvars = stp_printer_get_defaults(printer);
-   // if(printer != NULL)
-   // {
-   //    if(*driver_attrs == NULL)
-   //    {
-   //       *driver_attrs = ippNew();
-   //    }
-   // }
-
-   // assign all the functions related to the job flow over here...
-
-   // driver_data->status_cb     = guten_status;
-   // driver_data->has_supplies  = true;
-
 
    *driver_attrs = ippNew();
    driver_data->num_vendor = 0;
@@ -1903,18 +1628,6 @@ driver_cb(
 
    }
   
-  //  char ** spooling_conversions;
-  //  spooling_conversions = calloc(2 , sizeof(char *));
-  //  spooling_conversions[0] = "image/pwg-raster";
-  //  spooling_conversions[1] = "image/urf";
-  //  ippAddStrings(*driver_attrs, IPP_TAG_PRINTER, IPP_TAG_KEYWORD, "job-spooling-supported",num_opts, NULL, (const char *const *)spooling_conversions);
-
-    // // printing all the vendors over here...
-    // for(int sl = 0; sl< driver_data->num_vendor; sl++)
-    // {
-    //   printf("inside gutenprint --> %s\n", driver_data->vendor[sl]);
-    // }
-
 
    // Store all the static attributes over here...
    // AirPrint version...
@@ -2069,49 +1782,7 @@ driver_cb(
 
 
    driver_data->media_default = driver_data->media_ready[0];
-
-   //  data->num_media = (int)(sizeof(lprint_dymo_tape) / sizeof(lprint_dymo_tape[0]));
-   //  memcpy(data->media, lprint_dymo_tape, sizeof(lprint_dymo_tape));
-
-   //  data->num_source = 1;
-   //  data->source[0]  = "main-roll";
-
-
    return true;
-
-   // //    //  int ankit_len = driver_data.num_vendor;
-   //  ipp_attribute_t * ankit_preset;
-   //  int count = 0;
-
-   // // iterate over driver data vendor options over here...
-   // for(int x = 0 ; x< driver_data->num_vendor; x++)
-   // {
-   //    printf("in the function --> %s\n", driver_data->vendor[x]);
-   // }
-
-
-   //  for(ankit_preset = ippFirstAttribute(*driver_attrs); ankit_preset != NULL ; ankit_preset =  ippNextAttribute(*driver_attrs))
-   //  {
-   //    // here we are iterating on the ipp_t object...
-   //    int preset_len = ippGetCount(ankit_preset);
-   //    const char * okay_name = ippGetName(ankit_preset);
-   //    ipp_tag_t tag = ippGetValueTag(ankit_preset);
-   //    printf("the len of the values of the packet -_> %d\n", preset_len);
-   //    printf("This name of the option we have --> %s\n", okay_name);
-   //    for(int ix = 0; ix < preset_len; ix++)
-   //    {
-   //       switch(tag)
-   //       {
-   //          case IPP_TAG_KEYWORD:
-   //             const char * aorl = ippGetString(ankit_preset, ix, NULL);
-   //             printf("the value of the options i have  --> %s\n", aorl);
-   //             break;
-   //       }
-   //    }
-   //    printf(" %s\n", " ");
-   //  }
-
-
 }
 
 // 'mime_cb()' - MIME typing callback...
@@ -2276,39 +1947,3 @@ system_cb(
 }
 
 
-
-
-// // //$ gcc -c stpimage.c
-// // //$ gcc -o stpimage -lgutenprint stpimage.o
-
-// // // for compiling the binary file created ...
-
-// // // gcc -o native_printer native_printer.o -lgutenprint -lcups -lz -lm -lgssapi_krb5 -lavahi-common -lavahi-client -lgnutls -lkrb5 -lk5crypto -lcom_err -lkrb5support -ldbus-1 -lp11-kit -lidn2  -ltasn1 -lnettle -lhogweed -lgmp  -lresolv -lsystemd -lffi   -llzma -lzstd
-// // // gcc -c native_printer.c -o native_printer.o
-// // // gcc -o native_printer native_printer.o -lgutenprint
-
-// // //-lcups -lz -lm -lgssapi_krb5 -lavahi-common -lavahi-client -lgnutls -lkrb5 -lk5crypto -lcom_err -lkrb5support -ldbus-1 -lp11-kit -lidn2  -ltasn1 -lnettle -lhogweed -lgmp  -lresolv -lsystemd -lffi   -llzma -lzstd
-
-//     // below is the logic to print the ppd stuff ... like using list ..
-
-// //   printf("Ankti lenth --_> %d\n", stp_printer_model_count());
-// //   for (i = 0; i < stp_printer_model_count(); i++)
-// //     if ((printer = stp_get_printer_by_index(i)) != NULL)
-// //     {
-// //       const char *device_id;
-// //       if (!strcmp(stp_printer_get_family(printer), "ps") ||
-// // 	  !strcmp(stp_printer_get_family(printer), "raw"))
-// //         continue;
-
-// //       device_id = stp_printer_get_device_id(printer);
-// //       printf("\"%s://%s/expert\" "
-// //              "%s "
-// // 	     "\"%s\" "
-// //              "\"%s" CUPS_PPD_NICKNAME_STRING VERSION "\" "
-// // 	     "\"%s\"\n",
-// //              scheme, stp_printer_get_driver(printer),
-// // 	     "en",
-// // 	     stp_printer_get_manufacturer(printer),
-// // 	     stp_printer_get_long_name(printer),
-// // 	     device_id ? device_id : "");
-// //     }

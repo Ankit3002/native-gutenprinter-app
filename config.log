@@ -45,26 +45,26 @@ PATH: /snap/bin/
 ## Core tests. ##
 ## ----------- ##
 
-configure:2084: looking for aux files: config.guess config.sub
-configure:2097:  trying ./
-configure:2126:   ./config.guess found
-configure:2126:   ./config.sub found
-configure:2271: checking build system type
-configure:2286: result: aarch64-unknown-linux-gnu
-configure:2306: checking host system type
-configure:2320: result: aarch64-unknown-linux-gnu
-configure:2442: checking for gcc
-configure:2463: found /usr/bin/gcc
-configure:2474: result: gcc
-configure:2827: checking for C compiler version
-configure:2836: gcc --version >&5
+configure:2086: looking for aux files: config.guess config.sub
+configure:2099:  trying ./
+configure:2128:   ./config.guess found
+configure:2128:   ./config.sub found
+configure:2273: checking build system type
+configure:2288: result: aarch64-unknown-linux-gnu
+configure:2308: checking host system type
+configure:2322: result: aarch64-unknown-linux-gnu
+configure:2444: checking for gcc
+configure:2465: found /usr/bin/gcc
+configure:2476: result: gcc
+configure:2829: checking for C compiler version
+configure:2838: gcc --version >&5
 gcc (Ubuntu 13.2.0-23ubuntu4) 13.2.0
 Copyright (C) 2023 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-configure:2847: $? = 0
-configure:2836: gcc -v >&5
+configure:2849: $? = 0
+configure:2838: gcc -v >&5
 Using built-in specs.
 COLLECT_GCC=gcc
 COLLECT_LTO_WRAPPER=/usr/libexec/gcc/aarch64-linux-gnu/13/lto-wrapper
@@ -76,101 +76,101 @@ Thread model: posix
 Supported LTO compression algorithms: zlib zstd
 gcc version 13.2.0 (Ubuntu 13.2.0-23ubuntu4) 
 ... rest of stderr output deleted ...
-configure:2847: $? = 0
-configure:2836: gcc -V >&5
+configure:2849: $? = 0
+configure:2838: gcc -V >&5
 gcc: error: unrecognized command-line option '-V'
 gcc: fatal error: no input files
 compilation terminated.
-configure:2847: $? = 1
-configure:2836: gcc -qversion >&5
+configure:2849: $? = 1
+configure:2838: gcc -qversion >&5
 gcc: error: unrecognized command-line option '-qversion'; did you mean '--version'?
 gcc: fatal error: no input files
 compilation terminated.
-configure:2847: $? = 1
-configure:2836: gcc -version >&5
+configure:2849: $? = 1
+configure:2838: gcc -version >&5
 gcc: error: unrecognized command-line option '-version'
 gcc: fatal error: no input files
 compilation terminated.
-configure:2847: $? = 1
-configure:2867: checking whether the C compiler works
-configure:2889: gcc    conftest.c  >&5
-configure:2893: $? = 0
-configure:2943: result: yes
-configure:2946: checking for C compiler default output file name
-configure:2948: result: a.out
-configure:2954: checking for suffix of executables
-configure:2961: gcc -o conftest    conftest.c  >&5
-configure:2965: $? = 0
-configure:2988: result: 
-configure:3010: checking whether we are cross compiling
-configure:3018: gcc -o conftest    conftest.c  >&5
-configure:3022: $? = 0
-configure:3029: ./conftest
-configure:3033: $? = 0
-configure:3048: result: no
-configure:3053: checking for suffix of object files
-configure:3076: gcc -c   conftest.c >&5
-configure:3080: $? = 0
-configure:3102: result: o
-configure:3106: checking whether the compiler supports GNU C
-configure:3126: gcc -c   conftest.c >&5
-configure:3126: $? = 0
-configure:3136: result: yes
-configure:3147: checking whether gcc accepts -g
-configure:3168: gcc -c -g  conftest.c >&5
-configure:3168: $? = 0
-configure:3212: result: yes
-configure:3232: checking for gcc option to enable C11 features
-configure:3247: gcc  -c   conftest.c >&5
-configure:3247: $? = 0
-configure:3265: result: none needed
-configure:3423: checking for ranlib
-configure:3444: found /usr/bin/ranlib
-configure:3455: result: ranlib
-configure:3479: checking for ar
-configure:3502: found /usr/bin/ar
-configure:3514: result: /usr/bin/ar
-configure:3524: checking for mkdir
-configure:3547: found /usr/bin/mkdir
-configure:3559: result: /usr/bin/mkdir
-configure:3569: checking for rm
-configure:3592: found /usr/bin/rm
-configure:3604: result: /usr/bin/rm
-configure:3627: checking for install-sh script
-configure:3631: result: using /home/ank/Documents/native-gutenprinter-app/install-sh
-configure:3686: checking for pkg-config
-configure:3709: found /usr/bin/pkg-config
-configure:3721: result: /usr/bin/pkg-config
-configure:3851: checking for cups-config
-configure:3874: found /usr/bin/cups-config
-configure:3886: result: /usr/bin/cups-config
-configure:3908: checking for CUPS library v2.4 or higher
-configure:3924: result: yes, v2.4.7
-configure:4072: checking whether compiler supports -Wno-char-subscripts
-configure:4089: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include   -I/usr/include/cupsfilters  -I/usr/include/p11-kit-1 -D_REENTRANT  -Wno-char-subscripts -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
-configure:4089: $? = 0
-configure:4092: result: yes
-configure:4072: checking whether compiler supports -Wno-format-truncation
-configure:4089: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include   -I/usr/include/cupsfilters  -I/usr/include/p11-kit-1 -D_REENTRANT  -Wno-format-truncation -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
-configure:4089: $? = 0
-configure:4092: result: yes
-configure:4072: checking whether compiler supports -Wno-format-y2k
-configure:4089: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include   -I/usr/include/cupsfilters  -I/usr/include/p11-kit-1 -D_REENTRANT  -Wno-format-y2k -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
-configure:4089: $? = 0
-configure:4092: result: yes
-configure:4072: checking whether compiler supports -Wno-switch
-configure:4089: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include   -I/usr/include/cupsfilters  -I/usr/include/p11-kit-1 -D_REENTRANT  -Wno-switch -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
-configure:4089: $? = 0
-configure:4092: result: yes
-configure:4072: checking whether compiler supports -Wno-unused-result
-configure:4089: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include   -I/usr/include/cupsfilters  -I/usr/include/p11-kit-1 -D_REENTRANT  -Wno-unused-result -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
-configure:4089: $? = 0
-configure:4092: result: yes
-configure:4114: checking whether compiler supports -fPIE
-configure:4162: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include   -I/usr/include/cupsfilters  -I/usr/include/p11-kit-1 -D_REENTRANT  -fPIC -fPIE -pie  -D_FORTIFY_SOURCE=2 conftest.c >&5
-configure:4162: $? = 0
-configure:4167: result: yes
-configure:4328: creating ./config.status
+configure:2849: $? = 1
+configure:2869: checking whether the C compiler works
+configure:2891: gcc    conftest.c  >&5
+configure:2895: $? = 0
+configure:2945: result: yes
+configure:2948: checking for C compiler default output file name
+configure:2950: result: a.out
+configure:2956: checking for suffix of executables
+configure:2963: gcc -o conftest    conftest.c  >&5
+configure:2967: $? = 0
+configure:2990: result: 
+configure:3012: checking whether we are cross compiling
+configure:3020: gcc -o conftest    conftest.c  >&5
+configure:3024: $? = 0
+configure:3031: ./conftest
+configure:3035: $? = 0
+configure:3050: result: no
+configure:3055: checking for suffix of object files
+configure:3078: gcc -c   conftest.c >&5
+configure:3082: $? = 0
+configure:3104: result: o
+configure:3108: checking whether the compiler supports GNU C
+configure:3128: gcc -c   conftest.c >&5
+configure:3128: $? = 0
+configure:3138: result: yes
+configure:3149: checking whether gcc accepts -g
+configure:3170: gcc -c -g  conftest.c >&5
+configure:3170: $? = 0
+configure:3214: result: yes
+configure:3234: checking for gcc option to enable C11 features
+configure:3249: gcc  -c   conftest.c >&5
+configure:3249: $? = 0
+configure:3267: result: none needed
+configure:3425: checking for ranlib
+configure:3446: found /usr/bin/ranlib
+configure:3457: result: ranlib
+configure:3481: checking for ar
+configure:3504: found /usr/bin/ar
+configure:3516: result: /usr/bin/ar
+configure:3526: checking for mkdir
+configure:3549: found /usr/bin/mkdir
+configure:3561: result: /usr/bin/mkdir
+configure:3571: checking for rm
+configure:3594: found /usr/bin/rm
+configure:3606: result: /usr/bin/rm
+configure:3629: checking for install-sh script
+configure:3633: result: using /home/ank/Documents/native-gutenprinter-app/install-sh
+configure:3688: checking for pkg-config
+configure:3711: found /usr/bin/pkg-config
+configure:3723: result: /usr/bin/pkg-config
+configure:3854: checking for cups-config
+configure:3877: found /usr/bin/cups-config
+configure:3889: result: /usr/bin/cups-config
+configure:3911: checking for CUPS library v2.4 or higher
+configure:3964: result: yes, v2.4.7
+configure:4140: checking whether compiler supports -Wno-char-subscripts
+configure:4157: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0   -I/usr/include/cupsfilters  -I/usr/include/ppd  -I/usr/include/p11-kit-1 -D_REENTRANT  -I/usr/local/include  -Wno-char-subscripts -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
+configure:4157: $? = 0
+configure:4160: result: yes
+configure:4140: checking whether compiler supports -Wno-format-truncation
+configure:4157: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0   -I/usr/include/cupsfilters  -I/usr/include/ppd  -I/usr/include/p11-kit-1 -D_REENTRANT  -I/usr/local/include  -Wno-format-truncation -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
+configure:4157: $? = 0
+configure:4160: result: yes
+configure:4140: checking whether compiler supports -Wno-format-y2k
+configure:4157: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0   -I/usr/include/cupsfilters  -I/usr/include/ppd  -I/usr/include/p11-kit-1 -D_REENTRANT  -I/usr/local/include  -Wno-format-y2k -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
+configure:4157: $? = 0
+configure:4160: result: yes
+configure:4140: checking whether compiler supports -Wno-switch
+configure:4157: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0   -I/usr/include/cupsfilters  -I/usr/include/ppd  -I/usr/include/p11-kit-1 -D_REENTRANT  -I/usr/local/include  -Wno-switch -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
+configure:4157: $? = 0
+configure:4160: result: yes
+configure:4140: checking whether compiler supports -Wno-unused-result
+configure:4157: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0   -I/usr/include/cupsfilters  -I/usr/include/ppd  -I/usr/include/p11-kit-1 -D_REENTRANT  -I/usr/local/include  -Wno-unused-result -Werror  -D_FORTIFY_SOURCE=2 conftest.c >&5
+configure:4157: $? = 0
+configure:4160: result: yes
+configure:4182: checking whether compiler supports -fPIE
+configure:4230: gcc -c  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0   -I/usr/include/cupsfilters  -I/usr/include/ppd  -I/usr/include/p11-kit-1 -D_REENTRANT  -I/usr/local/include  -fPIC -fPIE -pie  -D_FORTIFY_SOURCE=2 conftest.c >&5
+configure:4230: $? = 0
+configure:4235: result: yes
+configure:4396: creating ./config.status
 
 ## ---------------------- ##
 ## Running config.status. ##
@@ -187,10 +187,10 @@ generated by GNU Autoconf 2.71.  Invocation command line was
 
 on something
 
-config.status:806: creating Makefile
-config.status:806: creating gutenprint-printer-app.service
-config.status:806: creating config.h
-config.status:976: config.h is unchanged
+config.status:811: creating Makefile
+config.status:811: creating gutenprint-printer-app.service
+config.status:811: creating config.h
+config.status:981: config.h is unchanged
 
 ## ---------------- ##
 ## Cache variables. ##
@@ -234,20 +234,22 @@ ac_cv_prog_cc_stdc=
 AR='/usr/bin/ar'
 ARFLAGS='cr'
 CC='gcc'
-CFLAGS='-fPIC  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0  -I/usr/local/include   -I/usr/include/cupsfilters  -I/usr/include/p11-kit-1 -D_REENTRANT '
+CFLAGS='-fPIC  -I/usr/local/include -I/usr/local/include/libcups3 -I/usr/include/dbus-1.0 -I/usr/lib/aarch64-linux-gnu/dbus-1.0/include -D_REENTRANT -I/usr/include/libpng16 -I/usr/include/libusb-1.0   -I/usr/include/cupsfilters  -I/usr/include/ppd  -I/usr/include/p11-kit-1 -D_REENTRANT  -I/usr/local/include '
 CPPFLAGS=' -D_FORTIFY_SOURCE=2 -D__USE_MISC -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64'
 CSFLAGS='-o runtime'
 CUPSCONFIG='/usr/bin/cups-config'
+CUPS_MODELDIR='/usr/share/cups/model/gutenprint/5.3'
 DEFS='-DHAVE_CONFIG_H'
 ECHO_C=''
 ECHO_N='-n'
 ECHO_T=''
 EXEEXT=''
 GUTENPRINT_PRINTER_APP_VERSION='1.0'
+GUTENPRINT_RELEASE_VERSION='5.3'
 INSTALL='/home/ank/Documents/native-gutenprinter-app/install-sh'
 LDFLAGS='-fPIE -pie '
 LIBOBJS=''
-LIBS=' -L/usr/local/lib -lpappl -lcups3  -L/usr/local/lib -lgutenprint  -lmagic  -lcupsfilters  -lcups '
+LIBS=' -L/usr/local/lib -lpappl -lcups3  -lmagic  -lcupsfilters  -lppd  -lcups  -L/usr/local/lib -lgutenprint '
 LTLIBOBJS=''
 MKDIR='/usr/bin/mkdir'
 OBJEXT='o'
@@ -316,5 +318,7 @@ unitdir='$(prefix)/lib/systemd/system'
 #define GUTENPRINT_PRINTER_APP_MAJOR_VERSION 1
 #define GUTENPRINT_PRINTER_APP_MINOR_VERSION 0
 #define GUTENPRINT_PRINTER_APP_PATCH_VERSION 0
+#define GUTENPRINT_RELEASE_VERSION "5.3"
+#define CUPS_MODELDIR "/usr/share/cups/model/gutenprint/5.3"
 
 configure: exit 0

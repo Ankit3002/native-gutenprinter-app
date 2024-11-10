@@ -107,21 +107,24 @@ AS_IF([$PKGCONFIG --exists pappl --atleast-version=1.2], [
 ])
 
 
-dnl CUPS library...
+dnl CUPS library check
 AC_PATH_TOOL([CUPSCONFIG], [cups-config])
 AC_MSG_CHECKING([for CUPS library v2.4 or higher])
+
 AS_IF([$PKGCONFIG --exists cups3], [
     CUPS_VERSION="$($PKGCONFIG --modversion cups3)"
     AC_MSG_RESULT([yes, v$CUPS_VERSION])
 
     CFLAGS="$CFLAGS $($PKGCONFIG --cflags cups3)"
     LIBS="$LIBS $($PKGCONFIG --libs cups3)"
+    cups_data_dir="/usr/share/cups"  dnl Set cups_data_dir if cups3 is found
 ], [$PKGCONFIG --exists cups], [
     CUPS_VERSION="$($PKGCONFIG --modversion cups)"
     AC_MSG_RESULT([yes, v$CUPS_VERSION])
 
     CFLAGS="$CFLAGS $($PKGCONFIG --cflags cups)"
     LIBS="$LIBS $($PKGCONFIG --libs cups)"
+    cups_data_dir="/usr/share/cups"  dnl Set cups_data_dir if cups is found
 ], [test "x$CUPSCONFIG" = x], [
     AC_MSG_RESULT([no])
     AC_MSG_ERROR([CUPS 2.4 or later is required for LPrint.])
@@ -130,15 +133,22 @@ AS_IF([$PKGCONFIG --exists cups3], [
     AS_CASE(["$CUPS_VERSION"],
         [1.* | 2.0* | 2.1* | 2.2* | 2.3*], [
             AC_MSG_RESULT(no)
-	    AC_MSG_ERROR([CUPS 2.4 or later is required for LPrint.])
+            AC_MSG_ERROR([CUPS 2.4 or later is required for LPrint.])
     ])
 
     AC_MSG_RESULT([yes, v$CUPS_VERSION])
     CFLAGS="$CFLAGS $($CUPSCONFIG --cflags)"
-    LDFLAGS="$LDFLAGSS $($CUPSCONFIG --ldflags)"
+    LDFLAGS="$LDFLAGS $($CUPSCONFIG --ldflags)"
     LIBS="$LIBS $($CUPSCONFIG --image --libs)"
+    cups_data_dir="/usr/share/cups"  dnl Set cups_data_dir if cups-config is used
 ])
 
+# Substitute CUPS_DATA_DIR into config.h
+AC_SUBST([CUPS_DATA_DIR], [$cups_data_dir])
+
+# Configure config.h header file
+AC_CONFIG_HEADERS([config.h])
+AC_OUTPUT
 
 dnl systemd support...
 unitdir=""

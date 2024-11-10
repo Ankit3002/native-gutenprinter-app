@@ -636,6 +636,8 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+GUTENPRINT_RELEASE_VERSION
+CUPS_MODELDIR
 host_os
 host_vendor
 host_cpu
@@ -3754,17 +3756,18 @@ else $as_nop
 
 fi
 
-if $PKGCONFIG --exists gutenprint 
-then :
 
-    CFLAGS="$CFLAGS $($PKGCONFIG --cflags gutenprint)"
-    LIBS="$LIBS $($PKGCONFIG --libs gutenprint)"
+# if $PKGCONFIG --exists gutenprint 
+# then :
 
-else $as_nop
+#     CFLAGS="$CFLAGS $($PKGCONFIG --cflags gutenprint)"
+#     LIBS="$LIBS $($PKGCONFIG --libs gutenprint)"
 
-    as_fn_error $? "gutenprint 5.3.5-pre1-2024-08-23T22-16-00c23caa or later is required for gutenprint-printer-app." "$LINENO" 5
+# else $as_nop
 
-fi
+#     as_fn_error $? "gutenprint 5.3.5-pre1-2024-08-23T22-16-00c23caa or later is required for gutenprint-printer-app." "$LINENO" 5
+
+# fi
 
 
 if $PKGCONFIG --exists libmagic; then
@@ -3917,45 +3920,79 @@ printf %s "checking for CUPS library v2.4 or higher... " >&6; }
 #     CFLAGS="$CFLAGS $($PKGCONFIG --cflags cups3)"
 #     LIBS="$LIBS $($PKGCONFIG --libs cups3)"
 
-if $PKGCONFIG --exists cups
-then :
+# if $PKGCONFIG --exists cups
+# then :
 
+#     CUPS_VERSION="$($PKGCONFIG --modversion cups)"
+#     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes, v$CUPS_VERSION" >&5
+# printf "%s\n" "yes, v$CUPS_VERSION" >&6; }
+
+#     CFLAGS="$CFLAGS $($PKGCONFIG --cflags cups)"
+#     LIBS="$LIBS $($PKGCONFIG --libs cups)"
+
+# elif test "x$CUPSCONFIG" = x
+# then :
+
+#     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+# printf "%s\n" "no" >&6; }
+#     as_fn_error $? "CUPS 2.4 or later is required for gutenprint-printer-app." "$LINENO" 5
+
+# else $as_nop
+
+#     CUPS_VERSION="$($CUPSCONFIG --version)"
+#     case "$CUPS_VERSION" in #(
+#   1.* | 2.0* | 2.1* | 2.2* | 2.3*) :
+
+#             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+# printf "%s\n" "no" >&6; }
+# 	    as_fn_error $? "CUPS 2.4 or later is required for gutenprint-printer-app." "$LINENO" 5
+#      ;; #(
+#   *) :
+#      ;;
+# esac
+
+#     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes, v$CUPS_VERSION" >&5
+# printf "%s\n" "yes, v$CUPS_VERSION" >&6; }
+#     CFLAGS="$CFLAGS $($CUPSCONFIG --cflags)"
+#     LDFLAGS="$LDFLAGSS $($CUPSCONFIG --ldflags)"
+#     LIBS="$LIBS $($CUPSCONFIG --image --libs)"
+
+# fi
+
+if $PKGCONFIG --exists cups; then
     CUPS_VERSION="$($PKGCONFIG --modversion cups)"
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes, v$CUPS_VERSION" >&5
-printf "%s\n" "yes, v$CUPS_VERSION" >&6; }
+    printf "%s\n" "yes, v$CUPS_VERSION" >&6; }
 
     CFLAGS="$CFLAGS $($PKGCONFIG --cflags cups)"
     LIBS="$LIBS $($PKGCONFIG --libs cups)"
 
-elif test "x$CUPSCONFIG" = x
-then :
 
+
+elif test "x$CUPSCONFIG" = x; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
+    printf "%s\n" "no" >&6; }
     as_fn_error $? "CUPS 2.4 or later is required for gutenprint-printer-app." "$LINENO" 5
 
-else $as_nop
-
+else
     CUPS_VERSION="$($CUPSCONFIG --version)"
-    case "$CUPS_VERSION" in #(
-  1.* | 2.0* | 2.1* | 2.2* | 2.3*) :
-
+    case "$CUPS_VERSION" in
+        1.* | 2.0* | 2.1* | 2.2* | 2.3*) :
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-	    as_fn_error $? "CUPS 2.4 or later is required for gutenprint-printer-app." "$LINENO" 5
-     ;; #(
-  *) :
-     ;;
-esac
+            printf "%s\n" "no" >&6; }
+            as_fn_error $? "CUPS 2.4 or later is required for gutenprint-printer-app." "$LINENO" 5
+            ;;
+        *) :
+            ;;
+    esac
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes, v$CUPS_VERSION" >&5
-printf "%s\n" "yes, v$CUPS_VERSION" >&6; }
+    printf "%s\n" "yes, v$CUPS_VERSION" >&6; }
     CFLAGS="$CFLAGS $($CUPSCONFIG --cflags)"
     LDFLAGS="$LDFLAGSS $($CUPSCONFIG --ldflags)"
     LIBS="$LIBS $($CUPSCONFIG --image --libs)"
 
 fi
-
 
 unitdir=""
 
@@ -4010,6 +4047,37 @@ then :
 
 fi
 
+
+# ac_config_headers="$ac_config_headers config.h"
+
+# Check if gutenprint is installed
+if $PKGCONFIG --exists gutenprint
+then
+    # Get the installed version
+    GUTENPRINT_INSTALLED_VERSION=$($PKGCONFIG --modversion gutenprint)
+
+    # Extract the major and minor version (e.g., "5.3" from "5.3.5-pre1-...")
+    GUTENPRINT_RELEASE_VERSION=$(echo $GUTENPRINT_INSTALLED_VERSION | cut -d'.' -f1,2)
+
+    # Define the required version (major and minor)
+    GUTENPRINT_REQUIRED_VERSION="5.3"
+    CUPS_MODELDIR="/usr/share/cups/model/gutenprint/${GUTENPRINT_RELEASE_VERSION}"
+    # Compare versions (if installed version >= required version)
+    if [[ "$(echo -e "$GUTENPRINT_RELEASE_VERSION\n$GUTENPRINT_REQUIRED_VERSION" | sort -V | head -n1)" == "$GUTENPRINT_REQUIRED_VERSION" ]]; then
+        # Version is sufficient, write the version information into config.h
+        CFLAGS="$CFLAGS $($PKGCONFIG --cflags gutenprint)"
+        LIBS="$LIBS $($PKGCONFIG --libs gutenprint)"
+        printf "%s\n" "#define GUTENPRINT_RELEASE_VERSION \"$GUTENPRINT_RELEASE_VERSION\"" >>confdefs.h
+        printf "%s\n" "#define CUPS_MODELDIR \"/usr/share/cups/model/gutenprint/$GUTENPRINT_RELEASE_VERSION\"" >>confdefs.h
+    else
+        # Version is too old, trigger an error and stop the script
+        as_fn_error 1 "gutenprint version 5.3 or later is required for gutenprint-printer-app. Installed version: $GUTENPRINT_INSTALLED_VERSION" "$LINENO" 5
+    fi
+
+else
+    # If gutenprint is not found, trigger an error
+    as_fn_error $? "gutenprint 5.3 or later is required for gutenprint-printer-app." "$LINENO" 5
+fi
 
 # Check whether --enable-debug was given.
 if test ${enable_debug+y}
